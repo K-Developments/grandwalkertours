@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -35,12 +33,12 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { Logo } from './icons';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { getTourPageTours, getDestinationPageDestinations } from '@/lib/firebase/firestore';
 import type { Tour, Destination } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
+import Image from 'next/image';
 
 const topNavLinks = [
   { href: '/about', label: 'About Us' },
@@ -57,7 +55,6 @@ const Header = () => {
   const [isDestinationsMenuOpen, setIsDestinationsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
-
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
@@ -68,9 +65,9 @@ const Header = () => {
     const unsubscribeDestinations = getDestinationPageDestinations(setDestinations);
 
     return () => {
-        window.removeEventListener('scroll', handleScroll);
-        unsubscribeTours();
-        unsubscribeDestinations();
+      window.removeEventListener('scroll', handleScroll);
+      unsubscribeTours();
+      unsubscribeDestinations();
     };
   }, []);
   
@@ -79,7 +76,6 @@ const Header = () => {
     visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeIn' } },
     exit: { opacity: 0, y: 10, transition: { duration: 0.2, ease: 'easeOut' } },
   };
-
 
   return (
     <header
@@ -104,22 +100,13 @@ const Header = () => {
               <div className="flex justify-between items-center h-10 text-sm">
                 <div className="flex items-center gap-6">
                   <div className="flex items-center gap-2">
-                    <a
-                      href="#"
-                      className="text-black hover:text-primary"
-                    >
+                    <a href="#" className="text-black hover:text-primary">
                       <Twitter className="w-4 h-4" />
                     </a>
-                    <a
-                      href="#"
-                      className="text-black hover:text-primary"
-                    >
+                    <a href="#" className="text-black hover:text-primary">
                       <Instagram className="w-4 h-4" />
                     </a>
-                    <a
-                      href="#"
-                      className="text-black hover:text-primary"
-                    >
+                    <a href="#" className="text-black hover:text-primary">
                       <Facebook className="w-4 h-4" />
                     </a>
                   </div>
@@ -134,9 +121,9 @@ const Header = () => {
                       {link.label}
                     </Link>
                   ))}
-                   <Link href="/admin/logo" className="text-black hover:text-primary transition-colors" title="Admin Login">
+                  <Link href="/admin/logo" className="text-black hover:text-primary transition-colors" title="Admin Login">
                     <User className="w-4 h-4" />
-                   </Link>
+                  </Link>
                 </nav>
               </div>
             </div>
@@ -147,24 +134,47 @@ const Header = () => {
       {/* --- MAIN BAR --- */}
       <div className="container mx-auto px-4">
         <div className={cn(
-            "flex items-center justify-between transition-all duration-300",
-            isScrolled || isMobile ? "h-16" : "h-20"
+          "flex items-center justify-between transition-all duration-300",
+          isScrolled || isMobile ? "h-16" : "h-20"
         )}>
           <Link href="/" className="flex items-center gap-2">
-            <Logo
-              className={cn(
-                'w-8 h-8 transition-colors',
-                isScrolled || isMobile ? 'text-primary' : 'text-primary-foreground'
+            {/* Large Logo (visible when not scrolled and not mobile) */}
+            <AnimatePresence>
+              {(!isScrolled && !isMobile) ? (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-2"
+                >
+                  <Image
+                    src="/logo-dark.png"
+                    alt="Grand Walker Tours Logo"
+                    width={200}
+                    height={200}
+                    className="object-contain absolute top-10 bg-black"
+
+                   />
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="flex items-center gap-2"
+                >
+                  <Image
+                    src="/logo-light.png"
+                    alt="Grand Walker Tours Logo"
+                    width={120}
+                    height={36}
+                    className="object-contain"
+                  />
+                </motion.div>
               )}
-            />
-            <span
-              className={cn(
-                'font-body text-2xl font-bold transition-colors uppercase',
-                isScrolled || isMobile ? 'text-black' : 'text-primary-foreground'
-              )}
-            >
-              Grand Walker Tours
-            </span>
+            </AnimatePresence>
           </Link>
 
           {/* Desktop Nav */}
@@ -177,83 +187,83 @@ const Header = () => {
             >
               <li><Link href="/" className="text-lg hover:text-primary transition-colors">Home</Link></li>
               
-               <DropdownMenu open={isToursMenuOpen} onOpenChange={setIsToursMenuOpen} modal={false}>
+              <DropdownMenu open={isToursMenuOpen} onOpenChange={setIsToursMenuOpen} modal={false}>
                 <DropdownMenuTrigger asChild>
-                   <Link 
+                  <Link 
                     href="/tours" 
                     className="flex items-center gap-1 text-lg hover:text-primary transition-colors focus:outline-none"
                     onMouseEnter={() => setIsToursMenuOpen(true)}
                     onMouseLeave={() => setIsToursMenuOpen(false)}
-                   >
+                  >
                     Tours 
                     <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isToursMenuOpen && "rotate-180")} />
                   </Link>
                 </DropdownMenuTrigger>
                 <AnimatePresence>
-                 {isToursMenuOpen && (
+                  {isToursMenuOpen && (
                     <DropdownMenuContent 
-                        asChild
-                        onMouseEnter={() => setIsToursMenuOpen(true)}
-                        onMouseLeave={() => setIsToursMenuOpen(false)}
-                        align="start"
-                        className="bg-background/80 backdrop-blur-md border-white/20 shadow-xl min-w-[240px]"
+                      asChild
+                      onMouseEnter={() => setIsToursMenuOpen(true)}
+                      onMouseLeave={() => setIsToursMenuOpen(false)}
+                      align="start"
+                      className="bg-background/80 backdrop-blur-md border-white/20 shadow-xl min-w-[240px]"
                     >
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            variants={dropdownVariants}
-                        >
+                      <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={dropdownVariants}
+                      >
                         {tours.map((tour) => (
                           <React.Fragment key={tour.id}>
                             <DropdownMenuItem asChild className="font-body text-base py-2.5 px-4 focus:bg-primary/10 focus:text-primary cursor-pointer uppercase">
-                                <Link href={`/tours?tourId=${tour.id}`}>{tour.name}</Link>
+                              <Link href={`/tours?tourId=${tour.id}`}>{tour.name}</Link>
                             </DropdownMenuItem>
                           </React.Fragment>
                         ))}
-                        </motion.div>
+                      </motion.div>
                     </DropdownMenuContent>
-                 )}
+                  )}
                 </AnimatePresence>
               </DropdownMenu>
 
               <DropdownMenu open={isDestinationsMenuOpen} onOpenChange={setIsDestinationsMenuOpen} modal={false}>
                 <DropdownMenuTrigger asChild>
-                   <Link 
+                  <Link 
                     href="/destinations" 
                     className="flex items-center gap-1 text-lg hover:text-primary transition-colors focus:outline-none"
                     onMouseEnter={() => setIsDestinationsMenuOpen(true)}
                     onMouseLeave={() => setIsDestinationsMenuOpen(false)}
-                   >
+                  >
                     Destinations
                     <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isDestinationsMenuOpen && "rotate-180")} />
                   </Link>
                 </DropdownMenuTrigger>
                 <AnimatePresence>
-                 {isDestinationsMenuOpen && (
+                  {isDestinationsMenuOpen && (
                     <DropdownMenuContent 
-                        asChild
-                        onMouseEnter={() => setIsDestinationsMenuOpen(true)}
-                        onMouseLeave={() => setIsDestinationsMenuOpen(false)}
-                        align="start"
-                        className="bg-background/80 backdrop-blur-md border-white/20 shadow-xl min-w-[240px]"
+                      asChild
+                      onMouseEnter={() => setIsDestinationsMenuOpen(true)}
+                      onMouseLeave={() => setIsDestinationsMenuOpen(false)}
+                      align="start"
+                      className="bg-background/80 backdrop-blur-md border-white/20 shadow-xl min-w-[240px]"
                     >
-                        <motion.div
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            variants={dropdownVariants}
-                        >
+                      <motion.div
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={dropdownVariants}
+                      >
                         {destinations.map((destination) => (
-                           <React.Fragment key={destination.id}>
+                          <React.Fragment key={destination.id}>
                             <DropdownMenuItem asChild className="font-body text-base py-2.5 px-4 focus:bg-primary/10 focus:text-primary cursor-pointer uppercase">
-                                <Link href={`/destinations?destinationId=${destination.id}`}>{destination.name}</Link>
+                              <Link href={`/destinations?destinationId=${destination.id}`}>{destination.name}</Link>
                             </DropdownMenuItem>
-                           </React.Fragment>
+                          </React.Fragment>
                         ))}
-                        </motion.div>
+                      </motion.div>
                     </DropdownMenuContent>
-                 )}
+                  )}
                 </AnimatePresence>
               </DropdownMenu>
               
@@ -282,10 +292,13 @@ const Header = () => {
                 <div className="flex flex-col h-full">
                   <div className="p-6 border-b flex justify-between items-center">
                     <Link href="/" className="flex items-center gap-2">
-                      <Logo className="w-8 h-8 text-primary" />
-                      <span className="font-body text-2xl font-bold text-foreground uppercase">
-                        Grand Walker Tours
-                      </span>
+                      <Image
+                        src="/logo-dark.png"
+                        alt="Grand Walker Tours Logo"
+                        width={120}
+                        height={36}
+                        className="object-contain"
+                      />
                     </Link>
                     <SheetClose asChild>
                       <Button variant="ghost" size="icon">
@@ -310,21 +323,21 @@ const Header = () => {
                      
                       <AccordionItem value="tours" className="border-b-0">
                         <AccordionTrigger className="font-body text-xl text-foreground hover:text-primary transition-colors py-2 [&[data-state=open]>svg]:text-primary uppercase">
-                           <Link href="/tours">Tours</Link>
+                          <Link href="/tours">Tours</Link>
                         </AccordionTrigger>
                         <AccordionContent className="pl-4">
-                           <ul className="flex flex-col gap-2 mt-2">
+                          <ul className="flex flex-col gap-2 mt-2">
                             {tours.map(tour => (
-                                <li key={tour.id}>
+                              <li key={tour.id}>
                                 <SheetClose asChild>
-                                    <Link
+                                  <Link
                                     href={`/tours?tourId=${tour.id}`}
                                     className="text-muted-foreground hover:text-primary transition-colors uppercase"
-                                    >
+                                  >
                                     {tour.name}
-                                    </Link>
+                                  </Link>
                                 </SheetClose>
-                                </li>
+                              </li>
                             ))}
                           </ul>
                         </AccordionContent>
@@ -332,21 +345,21 @@ const Header = () => {
                       
                       <AccordionItem value="destinations" className="border-b-0">
                         <AccordionTrigger className="font-body text-xl text-foreground hover:text-primary transition-colors py-2 [&[data-state=open]>svg]:text-primary uppercase">
-                           <Link href="/destinations">Destinations</Link>
+                          <Link href="/destinations">Destinations</Link>
                         </AccordionTrigger>
                         <AccordionContent className="pl-4">
-                           <ul className="flex flex-col gap-2 mt-2">
+                          <ul className="flex flex-col gap-2 mt-2">
                             {destinations.map(destination => (
-                                <li key={destination.id}>
+                              <li key={destination.id}>
                                 <SheetClose asChild>
-                                    <Link
+                                  <Link
                                     href={`/destinations?destinationId=${destination.id}`}
                                     className="text-muted-foreground hover:text-primary transition-colors uppercase"
-                                    >
+                                  >
                                     {destination.name}
-                                    </Link>
+                                  </Link>
                                 </SheetClose>
-                                </li>
+                              </li>
                             ))}
                           </ul>
                         </AccordionContent>
@@ -393,7 +406,7 @@ const Header = () => {
                           Services
                         </Link>
                       </SheetClose>
-                       <SheetClose asChild>
+                      <SheetClose asChild>
                         <Link
                           href="/faq"
                           className="font-body text-xl text-foreground hover:text-primary transition-colors w-full text-left py-2 uppercase"
@@ -410,22 +423,13 @@ const Header = () => {
                       </SheetClose>
                     </Button>
                     <div className="flex justify-center gap-4 mt-4">
-                      <a
-                        href="#"
-                        className="text-muted-foreground hover:text-primary"
-                      >
+                      <a href="#" className="text-muted-foreground hover:text-primary">
                         <Twitter className="w-5 h-5" />
                       </a>
-                      <a
-                        href="#"
-                        className="text-muted-foreground hover:text-primary"
-                      >
+                      <a href="#" className="text-muted-foreground hover:text-primary">
                         <Instagram className="w-5 h-5" />
                       </a>
-                      <a
-                        href="#"
-                        className="text-muted-foreground hover:text-primary"
-                      >
+                      <a href="#" className="text-muted-foreground hover:text-primary">
                         <Facebook className="w-5 h-5" />
                       </a>
                     </div>
