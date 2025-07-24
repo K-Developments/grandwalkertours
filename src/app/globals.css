@@ -1,26 +1,154 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --foreground: 262 25% 25%;
+    --card: 0 0% 100%;
+    --card-foreground: 262 25% 25%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 262 25% 25%;
+    --primary: 261 23% 63%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 261 20% 88%;
+    --secondary-foreground: 262 33% 38%;
+    --muted: 240 5% 90%;
+    --muted-foreground: 240 5% 55%;
+    --accent: 262 33% 38%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 261 20% 80%;
+    --input: 261 20% 85%;
+    --ring: 262 33% 38%;
+    --radius: 2px;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 262 25% 10%;
+    --foreground: 240 20% 95%;
+    --card: 262 25% 15%;
+    --card-foreground: 240 20% 95%;
+    --popover: 262 25% 10%;
+    --popover-foreground: 240 20% 95%;
+    --primary: 261 23% 63%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 262 33% 38%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 262 25% 20%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 261 23% 75%;
+    --accent-foreground: 262 25% 15%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 262 25% 25%;
+    --input: 262 25% 25%;
+    --ring: 261 23% 75%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+html{
+  font-size:100%;
 }
+h1, h2, h3, h4, h5 {
+  text-transform: uppercase;
+}
+p{
+  line-height:1.8rem;
+  font-size:1.2rem !important;
+}
+
+
+/*dont remove*/
+.why-choose{
+  border-bottom:1px solid black;
+}
+@layer base {
+  * {
+    @apply border-border;
+  }
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Tiptap prose styles */
+.prose {
+    h1, h2, h3, h4, h5, h6 {
+        text-transform: uppercase;
+        font-family: 'Playfair Display', serif;
+        font-weight: 300;
+    }
+
+    p {
+        line-height: 1.8rem;
+    }
+    
+    ul {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+    }
+
+    ol {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+    }
+
+    a {
+        color: hsl(var(--primary));
+        text-decoration: underline;
+    }
+
+    /* Target generated font-size spans */
+    span[style*="font-size"] {
+      font-size: var(--font-size-override);
+    }
+
+    p[data-gap="small"] {
+      margin-bottom: 0.5rem;
+    }
+    p[data-gap="medium"] {
+      margin-bottom: 1.5rem;
+    }
+    p[data-gap="large"] {
+      margin-bottom: 2.5rem;
+    }
+
+}
+
+.prose p {
+    font-size: inherit; /* Ensure paragraphs inherit font size from parent */
+}
+
+/* Add custom font size classes that Tiptap can apply */
+.text-xs { font-size: 0.75rem; }
+.text-sm { font-size: 0.875rem; }
+.text-base { font-size: 1rem; }
+.text-lg { font-size: 1.125rem; }
+.text-xl { font-size: 1.25rem; }
+.text-2xl { font-size: 1.5rem; }
+
+/* Handle font sizes from tiptap */
+.prose [style*="font-size: 12px"] { font-size: 12px; }
+.prose [style*="font-size: 14px"] { font-size: 14px; }
+.prose [style*="font-size: 16px"] { font-size: 16px; }
+.prose [style*="font-size: 18px"] { font-size: 18px; }
+.prose [style*="font-size: 20px"] { font-size: 20px; }
+.prose [style*="font-size: 24px"] { font-size: 24px; }
