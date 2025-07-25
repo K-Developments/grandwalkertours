@@ -25,14 +25,14 @@ const ServicesHero = () => {
 
   if (loading) {
     return (
-       <section className="relative h-[60vh] w-full bg-muted">
+       <section className="relative h-[60vh] md:h-[120vh] w-full bg-muted">
          <Skeleton className="w-full h-full" />
        </section>
     );
   }
 
   return (
-    <section className="relative h-[60vh] w-full bg-black">
+    <section className="relative h-[60vh] md:h-[120vh] w-full bg-black">
        <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -80,7 +80,7 @@ const Header = () => {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 w-full z-50 transition-all duration-300',
+        'fixed top-0 left-0 w-full z-50 transition-all duration-300 md:border-none border-t-[0.3rem] border-primary ',
         isScrolled || isMobile
           ? 'bg-[hsl(var(--background))] shadow-md'
           : 'bg-transparent'
@@ -130,7 +130,7 @@ const Header = () => {
       </AnimatePresence>
 
       {/* --- MAIN BAR --- */}
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 py-0 md:py-5">
         <div className={cn(
           "flex items-center justify-between transition-all duration-300",
           isScrolled || isMobile ? "h-16" : "h-20"
@@ -176,11 +176,11 @@ const Header = () => {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-8  ">
             <ul
               className={cn(
                 'flex items-center gap-8 font-body uppercase',
-                isScrolled || isMobile ? 'text-black' : 'text-primary-foreground'
+                isScrolled || isMobile ? 'text-black' : 'text-primary-foreground '
               )}
             >
               <li><Link href="/" className="text-lg hover:text-primary transition-colors">Home</Link></li>
