@@ -121,9 +121,7 @@ const Header = () => {
                       {link.label}
                     </Link>
                   ))}
-                  <Link href="/admin/logo" className="text-black hover:text-primary transition-colors" title="Admin Login">
-                    <User className="w-4 h-4" />
-                  </Link>
+                  
                 </nav>
               </div>
             </div>
