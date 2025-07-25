@@ -8,11 +8,10 @@ import { getTours, getHomepageSectionTitles } from '@/lib/firebase/firestore';
 import type { Tour, HomepageSectionTitles } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { IconDisplay } from '@/components/icon-display';
+import { ArrowRight } from 'lucide-react';
 
 export default function ToursSection() {
   const [tours, setTours] = useState<Tour[]>([]);
@@ -38,14 +37,16 @@ export default function ToursSection() {
 
   if (loading) {
     return (
-      <section id="tours" className="w-full h-[90vh] flex">
-        <div className="w-[30%] bg-card p-8 flex items-center">
-          <div className="w-full">
-            <Skeleton className="h-10 w-3/4 mb-4" />
-            <Skeleton className="h-24 w-full" />
-          </div>
+      <section id="tours" className="w-full h-[90vh] flex bg-background">
+        <div className="w-full md:w-[40%] bg-card p-8 flex flex-col justify-center">
+            <Skeleton className="h-10 w-3/4 mb-8" />
+            <div className="space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full opacity-70" />
+                <Skeleton className="h-12 w-full opacity-50" />
+            </div>
         </div>
-        <div className="w-[70%] relative">
+        <div className="hidden md:block md:w-[60%] relative">
           <Skeleton className="w-full h-full" />
         </div>
       </section>
@@ -59,57 +60,33 @@ export default function ToursSection() {
   const activeTour = tours[activeIndex];
 
   return (
-    <section id="tours" className="w-full md:h-[90vh] flex flex-col md:flex-row bg-card overflow-hidden text-white">
-      {/* Mobile Layout: Title -> Image -> Description */}
-      <div className="md:hidden flex flex-col ">
-        {/* Mobile Title */}
-        <div className="p-6 bg-black order-1">
-          <h2 className="font-body text-3xl uppercase">{activeTour.name}</h2>
-          <Separator className="my-4" />
-        </div>
-        
-        {/* Image */}
-        <div className="relative h-60 w-full order-2">
-           <Image
-              src={activeTour.image}
-              alt={activeTour.name}
-              fill
-              className="object-cover"
-              sizes="100vw"
-              data-ai-hint={activeTour.imageHint}
-              quality={95}
-            />
-        </div>
-
-        {/* Mobile Description & Button */}
-        <div className="p-6 bg-black order-3 flex flex-col justify-center items-center text-center">
-          <p className="text-white">{activeTour.description}</p>
-           {activeTour.activities && activeTour.activities.length > 0 && (
-            <div className="w-full max-w-xs mx-auto mt-6">
-                <Carousel opts={{ align: 'start', loop: true }} className="w-full">
-                    <CarouselContent>
-                    {activeTour.activities.map((activity) => (
-                        <CarouselItem key={activity.id} className="basis-1/3">
-                            <div className="flex flex-col items-center text-center gap-2">
-                                <IconDisplay iconName={activity.icon} className="w-6 h-6 text-primary" />
-                                <span className="text-xs text-muted-foreground">{activity.name}</span>
-                            </div>
-                        </CarouselItem>
-                    ))}
-                    </CarouselContent>
-                </Carousel>
-            </div>
-          )}
-          <Button className="mt-6" asChild={!!activeTour.link}>
-            {activeTour.link ? <Link href={activeTour.link}>View Tour</Link> : <>View Tour</>}
-          </Button>
+    <section id="tours" className="w-full flex flex-col md:flex-row bg-background text-foreground min-h-[80vh]">
+      {/* Left Column (Tour List & Title) */}
+      <div className="w-full md:w-[40%] p-8 md:p-12 flex flex-col justify-center">
+        <h2 className="font-headline text-3xl md:text-4xl font-light mb-8">
+            {titles?.toursTitle || 'Featured Tours'}
+        </h2>
+        <div className="flex flex-col">
+            {tours.map((tour, index) => (
+                <button
+                    key={tour.id}
+                    onMouseEnter={() => setActiveIndex(index)}
+                    onClick={() => setActiveIndex(index)}
+                    className={cn(
+                        "text-left p-4 border-l-4 transition-colors duration-300",
+                        activeIndex === index 
+                            ? 'border-primary bg-muted' 
+                            : 'border-transparent hover:bg-muted/50'
+                    )}
+                >
+                    <h3 className="font-headline text-xl font-light">{tour.name}</h3>
+                </button>
+            ))}
         </div>
       </div>
 
-
-      {/* Desktop Layout */}
-      {/* Left Column (Image & Navigation) */}
-      <div className="hidden md:flex md:w-[65%] relative h-full">
+      {/* Right Column (Image & Details) */}
+      <div className="w-full md:w-[60%] relative h-[60vh] md:h-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeIndex}
@@ -117,113 +94,56 @@ export default function ToursSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.7 }}
+            transition={{ duration: 0.7, ease: 'easeInOut' }}
           >
             <Image
               src={activeTour.image}
               alt={activeTour.name}
               fill
               className="object-cover"
-              sizes="70vw"
+              sizes="(max-width: 768px) 100vw, 60vw"
               data-ai-hint={activeTour.imageHint}
               quality={95}
+              priority={activeIndex === 0}
             />
           </motion.div>
         </AnimatePresence>
-        <div className="absolute inset-0 bg-black/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
-        {/* Desktop Navigation */}
-        <div className="absolute top-10 right-10 z-10 hidden md:block">
-          <div className="flex flex-col items-end gap-2">
-            {tours.map((tour, index) => (
-              <button
-                key={tour.id}
-                onClick={() => setActiveIndex(index)}
-                className="flex items-center gap-4 text-primary-foreground focus:outline-none"
-              >
-                <span className={cn(
-                  "font-mono text-sm transition-opacity",
-                  activeIndex !== index && "opacity-60"
-                )}>
-                  0{index + 1}
-                </span>
-                <div className="w-16 h-10 border border-primary-foreground/50 flex items-center justify-center p-1">
-                  <motion.div
-                    className="w-full h-0.5 bg-primary-foreground"
-                    initial={{ y: 0 }}
-                    animate={{ y: activeIndex === index ? 12 : 0 }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-                  />
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-      
-      {/* Right Column (Details) */}
-      <div className="hidden md:flex md:w-[35%] p-8 md:p-12 flex-col justify-center bg-black text-white">
-        <div>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeIndex}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.5, ease: 'easeInOut' }}
-              className="flex flex-col h-full"
-            >
-              <div>
-                <h2 className="font-body text-3xl uppercase">{activeTour.name}</h2>
-                <Separator className="my-4" />
-              </div>
-              <div>
-                <p className="text-white">{activeTour.description}</p>
-              </div>
-
-              {activeTour.activities && activeTour.activities.length > 0 && (
-                <div className="mt-8">
-                    <Carousel opts={{ align: 'start' }} className="w-full">
-                        <CarouselContent>
-                        {activeTour.activities.map((activity) => (
-                            <CarouselItem key={activity.id} className="md:basis-1/2 lg:basis-1/3">
-                                <div className="flex flex-col items-center text-center gap-2">
-                                    <IconDisplay iconName={activity.icon} className="w-8 h-8 text-primary" />
-                                    <span className="text-sm text-muted-foreground">{activity.name}</span>
+        <div className="absolute bottom-0 left-0 p-8 md:p-12 text-white w-full">
+            <AnimatePresence mode="wait">
+                <motion.div
+                     key={activeIndex}
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     exit={{ opacity: 0, y: -20 }}
+                     transition={{ duration: 0.5, ease: 'easeInOut' }}
+                >
+                    <h3 className="font-headline text-3xl font-light text-white mb-2">{activeTour.name}</h3>
+                    <p className="max-w-xl text-white/90 mb-4 line-clamp-3">{activeTour.description}</p>
+                    
+                    {activeTour.activities && activeTour.activities.length > 0 && (
+                        <div className="flex flex-wrap items-center gap-4 mb-6">
+                            {activeTour.activities.map(activity => (
+                                <div key={activity.id} className="flex items-center gap-2 bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-full text-xs">
+                                    <IconDisplay iconName={activity.icon} className="w-4 h-4 text-white" />
+                                    <span>{activity.name}</span>
                                 </div>
-                            </CarouselItem>
-                        ))}
-                        </CarouselContent>
-                        <CarouselPrevious />
-                        <CarouselNext />
-                    </Carousel>
-                </div>
-              )}
-              
-              <div className="mt-auto pt-4">
-                <Button asChild={!!activeTour.link}>
-                  {activeTour.link ? <Link href={activeTour.link}>View Tour</Link> : <>View Tour</>}
-                </Button>
-              </div>
-            </motion.div>
-          </AnimatePresence>
+                            ))}
+                        </div>
+                    )}
+
+                    {activeTour.link && (
+                        <Button variant="outline" asChild className="bg-transparent text-white border-white hover:bg-white hover:text-black">
+                           <Link href={activeTour.link} >
+                             View Tour <ArrowRight className="ml-2 w-4 h-4" />
+                           </Link>
+                        </Button>
+                    )}
+                </motion.div>
+            </AnimatePresence>
         </div>
       </div>
-
-       {/* Mobile Navigation */}
-      <div className="md:hidden flex justify-center items-center gap-3 py-4 order-4 bg-card">
-          {tours.map((_, index) => (
-            <button
-              key={`dot-${index}`}
-              onClick={() => setActiveIndex(index)}
-              className={cn(
-                "w-2.5 h-2.5 rounded-full transition-colors",
-                activeIndex === index ? 'bg-primary' : 'bg-muted-foreground/50'
-              )}
-              aria-label={`Go to tour ${index + 1}`}
-            />
-          ))}
-        </div>
     </section>
   );
 };
