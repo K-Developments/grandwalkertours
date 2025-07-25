@@ -74,7 +74,7 @@ const TestimonialsSection = () => {
               <CarouselItem key={testimonial.id}>
                 <div className="p-1">
                   <div className="flex flex-col items-center text-center gap-6">
-                    <Quote className="w-12 h-12 text-muted-foreground/50" />
+                    <Quote className="w-12 h-12 text-primary" />
                     <p className="text-xl text-muted-foreground italic max-w-2xl">"{testimonial.quote}"</p>
                     <div className="flex flex-col items-center gap-3 mt-4">
                       <Avatar className="w-16 h-16">
