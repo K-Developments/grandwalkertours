@@ -95,7 +95,7 @@ export default function DestinationsSection() {
             {destinations.length > 0 ? (
               destinations.map((destination) => (
                 <CarouselItem key={destination.id} className="p-2 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                  <div className="group relative overflow-hidden h-[450px] md:h-[550px] border p-6 flex flex-col justify-between">
+                  <div className="group relative overflow-hidden h-[70vh] md:h-[80vh] border p-6 flex flex-col justify-between">
                     <Image 
                       src={destination.image} 
                       alt={destination.name} 
