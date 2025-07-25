@@ -55,6 +55,10 @@ export default async function RootLayout({
           rel="stylesheet"
         />
 
+        {/* Preload Header Logos */}
+        <link rel="preload" as="image" href="/logo-dark.png" />
+        <link rel="preload" as="image" href="/logo-light.png" />
+
         {/**preload the hero slider images when site is loading */}
         {slides.map((slide) => (
           <link key={slide.id} rel="preload" as="image" href={slide.image} />

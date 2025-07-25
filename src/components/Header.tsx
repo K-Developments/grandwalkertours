@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -77,6 +78,16 @@ const Header = () => {
     exit: { opacity: 0, y: 10, transition: { duration: 0.2, ease: 'easeOut' } },
   };
 
+  const largeLogoVariants = {
+    hidden: { opacity: 0, height: "50%", transition: { duration: 0.3, ease: 'easeOut' } },
+    visible: { opacity: 1, height: "100%", transition: { duration: 0.4, ease: 'easeIn' } },
+  };
+
+  const smallLogoVariants = {
+     hidden: { opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } },
+     visible: { opacity: 1, transition: { duration: 0.3, ease: 'easeIn', delay: 0.1 } },
+  }
+
   return (
     <header
       className={cn(
@@ -130,38 +141,40 @@ const Header = () => {
       </AnimatePresence>
 
       {/* --- MAIN BAR --- */}
-      <div className="container mx-auto px-4 py-0 md:py-5">
+      <div className={cn(
+        "container mx-auto px-4 py-0",
+         !isScrolled || isMobile ? "py-0" : "py-5"
+        )}>
         <div className={cn(
           "flex items-center justify-between transition-all duration-300",
           isScrolled || isMobile ? "h-16" : "h-20"
         )}>
-          <Link href="/" className="flex items-center gap-2">
-            {/* Large Logo (visible when not scrolled and not mobile) */}
-            <AnimatePresence>
+          <Link href="/" className="flex items-center gap-2 h-full">
+            <AnimatePresence mode="wait">
               {(!isScrolled && !isMobile) ? (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center gap-2"
+                  key="large-logo"
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  variants={largeLogoVariants}
+                  className="relative h-full  "
                 >
                   <Image
                     src="/logo-dark.png"
                     alt="Grand Walker Tours Logo"
-                    width={200}
-                    height={200}
-                    className="object-contain absolute top-10 bg-black"
-
+                    width={150}
+                    height={150}
+                    className="object-contain bg-black"
                    />
                 </motion.div>
               ) : (
                 <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="flex items-center gap-2"
+                  key="small-logo"
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                  variants={smallLogoVariants}
                 >
                   <Image
                     src="/logo-light.png"
