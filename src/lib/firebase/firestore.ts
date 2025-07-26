@@ -13,8 +13,9 @@ import {
   Timestamp,
   orderBy,
   getDocs,
+  where,
 } from 'firebase/firestore';
-import type { HeroSlide, WelcomeSectionContent, Destination, Tour, Service, AboutHeroContent, MissionVisionContent, WhyChooseUsItem, Testimonial, ServicePageHeroContent, ServicePageIntroContent, TourPageHeroContent, TourPageIntroContent, DestinationPageHeroContent, DestinationPageIntroContent, ContactPageHeroContent, ContactPageDetailsContent, CookieConsentLog, FAQItem, FaqPageHeroContent, HomepageSectionTitles, AboutSectionTitles, CookiePolicyContent, PrivacyPolicyContent, GalleryItem, GalleryPageHeroContent } from '@/lib/types';
+import type { HeroSlide, WelcomeSectionContent, Destination, Tour, Service, AboutHeroContent, MissionVisionContent, WhyChooseUsItem, Testimonial, ServicePageHeroContent, ServicePageIntroContent, TourPageHeroContent, TourPageIntroContent, DestinationPageHeroContent, DestinationPageIntroContent, ContactPageHeroContent, ContactPageDetailsContent, CookieConsentLog, FAQItem, FaqPageHeroContent, HomepageSectionTitles, AboutSectionTitles, CookiePolicyContent, PrivacyPolicyContent, GalleryItem, GalleryPageHeroContent, BlogPageHeroContent, BlogPost } from '@/lib/types';
 
 const SLIDES_COLLECTION = 'heroSlides';
 const HOMEPAGE_COLLECTION = 'homepageContent';
@@ -26,6 +27,7 @@ const CONTACTPAGE_COLLECTION = 'contactpageContent';
 const FAQPAGE_COLLECTION = 'faqpageContent';
 const LEGALPAGE_COLLECTION = 'legalpageContent';
 const GALLERYPAGE_COLLECTION = 'gallerypageContent';
+const BLOGPAGE_COLLECTION = 'blogpageContent';
 const GALLERY_COLLECTION = 'gallery';
 const WELCOME_SECTION_DOC = 'welcomeSection';
 const HOMEPAGE_SECTION_TITLES_DOC = 'sectionTitles';
@@ -37,6 +39,7 @@ const DESTINATION_PAGE_HERO_DOC = 'hero';
 const CONTACT_PAGE_HERO_DOC = 'hero';
 const FAQ_PAGE_HERO_DOC = 'hero';
 const GALLERY_PAGE_HERO_DOC = 'hero';
+const BLOG_PAGE_HERO_DOC = 'hero';
 const CONTACT_DETAILS_DOC = 'details';
 const SERVICE_PAGE_INTRO_DOC = 'intro';
 const TOUR_PAGE_INTRO_DOC = 'intro';
@@ -50,6 +53,7 @@ const TOURS_COLLECTION = 'tours';
 const TOUR_PAGE_TOURS_COLLECTION = 'tourPageTours';
 const SERVICES_COLLECTION = 'services';
 const SERVICE_PAGE_SERVICES_COLLECTION = 'servicePageServices';
+const BLOG_POSTS_COLLECTION = 'blogPosts';
 const COOKIE_CONSENT_LOGS_COLLECTION = 'cookieConsentLogs';
 const FAQ_COLLECTION = 'faq';
 const COOKIE_POLICY_DOC = 'cookiePolicy';
@@ -417,6 +421,34 @@ export async function updateGalleryPageHeroContent(content: GalleryPageHeroConte
   } catch (e) {
     console.error('Error updating document: ', e);
     throw new Error('Could not update Gallery page hero content');
+  }
+}
+
+// --- Blog Page Hero Section ---
+export function getBlogPageHeroContent(callback: (content: BlogPageHeroContent | null) => void) {
+  const docRef = doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC);
+  const unsubscribe = onSnapshot(docRef, (docSnap) => {
+    if (docSnap.exists()) {
+      callback(docSnap.data() as BlogPageHeroContent);
+    } else {
+      callback(null);
+    }
+  });
+  return unsubscribe;
+}
+
+export async function updateBlogPageHeroContent(content: BlogPageHeroContent) {
+  try {
+    const docRef = doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC);
+    const dataToSave = {
+      ...content,
+      image: content.image || '',
+      imageHint: content.imageHint || '',
+    };
+    await setDoc(docRef, dataToSave, { merge: true });
+  } catch (e) {
+    console.error('Error updating document: ', e);
+    throw new Error('Could not update Blog page hero content');
   }
 }
 
@@ -958,6 +990,91 @@ export async function deleteServicePageService(id: string) {
     throw new Error('Could not delete service page service');
   }
 }
+
+// --- Blog Posts ---
+
+// Get all blog posts once for server-side rendering
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('publishedAt', 'desc'));
+    const querySnapshot = await getDocs(q);
+    const posts: BlogPost[] = [];
+    querySnapshot.forEach((doc) => {
+      posts.push({ id: doc.id, ...doc.data() } as BlogPost);
+    });
+    return posts;
+  } catch (e) {
+    console.error('Error getting blog posts: ', e);
+    return [];
+  }
+}
+
+// Get all blog posts with real-time updates for client-side
+export function getBlogPostsWithUpdates(callback: (posts: BlogPost[]) => void) {
+  const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('publishedAt', 'desc'));
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const posts: BlogPost[] = [];
+    querySnapshot.forEach((doc) => {
+      posts.push({ id: doc.id, ...doc.data() } as BlogPost);
+    });
+    callback(posts);
+  });
+  return unsubscribe;
+}
+
+// Get a single blog post by its slug for static generation
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  const q = query(collection(db, BLOG_POSTS_COLLECTION), where("slug", "==", slug));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) {
+    return null;
+  }
+  const docSnap = querySnapshot.docs[0];
+  return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+}
+
+// Get a single blog post by its ID for editing
+export async function getBlogPostById(id: string): Promise<BlogPost | null> {
+  const docRef = doc(db, BLOG_POSTS_COLLECTION, id);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+  }
+  return null;
+}
+
+// Add a new blog post
+export async function addBlogPost(post: Omit<BlogPost, 'id'>) {
+  try {
+    const docRef = await addDoc(collection(db, BLOG_POSTS_COLLECTION), post);
+    return docRef.id;
+  } catch (e) {
+    console.error('Error adding document: ', e);
+    throw new Error('Could not add blog post');
+  }
+}
+
+// Update an existing blog post
+export async function updateBlogPost(id: string, post: Partial<Omit<BlogPost, 'id'>>) {
+  try {
+    const docRef = doc(db, BLOG_POSTS_COLLECTION, id);
+    await updateDoc(docRef, post);
+  } catch (e) {
+    console.error('Error updating document: ', e);
+    throw new Error('Could not update blog post');
+  }
+}
+
+// Delete a blog post
+export async function deleteBlogPost(id: string) {
+  try {
+    await deleteDoc(doc(db, BLOG_POSTS_COLLECTION, id));
+  } catch (e) {
+    console.error('Error deleting document: ', e);
+    throw new Error('Could not delete blog post');
+  }
+}
+
 
 // --- Cookie Consent Logging ---
 export async function logCookieConsent() {

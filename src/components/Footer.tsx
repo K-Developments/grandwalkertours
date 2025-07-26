@@ -87,6 +87,7 @@ const Footer = () => {
                 viewport={{ once: false, amount: 0.3 }}
               >
                 <motion.li variants={itemVariants}><Link href="/about" className="text-sm text-muted-foreground hover:text-primary">About Us</Link></motion.li>
+                <motion.li variants={itemVariants}><Link href="/blog" className="text-sm text-muted-foreground hover:text-primary">Blog</Link></motion.li>
                 <motion.li variants={itemVariants}><a href="#" className="text-sm text-muted-foreground hover:text-primary">Careers</a></motion.li>
                 <motion.li variants={itemVariants}><a href="#" className="text-sm text-muted-foreground hover:text-primary">Press</a></motion.li>
               </motion.ul>

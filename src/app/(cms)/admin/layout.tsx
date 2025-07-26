@@ -20,6 +20,7 @@ import {
   Gavel,
   GalleryHorizontal,
   Car,
+  BookOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/icons';
@@ -35,6 +36,7 @@ const navItems = [
   { href: '/admin/services', icon: ConciergeBell, label: 'Services' },
   { href: '/admin/tours', icon: Palette, label: 'Tours' },
   { href: '/admin/gallery', icon: GalleryHorizontal, label: 'Gallery' },
+  { href: '/admin/blog', icon: BookOpen, label: 'Blog' },
   { href: '/admin/rent-a-car', icon: Car, label: 'Rent a Car' },
   { href: '/admin/contact', icon: Phone, label: 'Contact Page' },
   { href: '/admin/faq', icon: HelpCircle, label: 'FAQ Page' },

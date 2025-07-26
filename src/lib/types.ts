@@ -82,6 +82,11 @@ export type GalleryPageHeroContent = {
     imageHint?: string;
 };
 
+export type BlogPageHeroContent = {
+  image?: string;
+  imageHint?: string;
+};
+
 export type ContactPageDetailsContent = {
   addressLine1: string;
   addressLine2: string;
@@ -214,6 +219,20 @@ export type GalleryItem = {
   imageHint?: string;
   category?: string;
 };
+
+export type BlogPost = {
+  id?: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  featuredImage: string;
+  featuredImageHint?: string;
+  content: string;
+  authorName: string;
+  authorAvatar: string;
+  publishedAt: Date | Timestamp;
+};
+
 
 // Add a new type for the Rent a Car page if you plan to make it dynamic
 export type RentACarContent = {
