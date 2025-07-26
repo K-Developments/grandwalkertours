@@ -17,9 +17,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ["'PT Sans'", 'sans-serif'],
         headline: ["'Playfair Display'", 'serif'],
-        display: ["'Dancing Script'", 'cursive'],
         code: ['monospace'],
       },
       colors: {
