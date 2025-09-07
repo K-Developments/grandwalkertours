@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -27,13 +26,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from '@/components/ui/dropdown-menu';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { getTourPageTours, getDestinationPageDestinations } from '@/lib/firebase/firestore';
@@ -45,7 +37,7 @@ const topNavLinks = [
   { href: '/about', label: 'About Us' },
   { href: '/services', label: 'Services' },
   { href: '/faq', label: 'FAQ' },
-   { href: '/blog', label: 'Blog' },
+  { href: '/blog', label: 'Blog' },
   { href: '/gallery', label: 'Gallery' },
 ];
 
@@ -53,8 +45,6 @@ const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [tours, setTours] = useState<Tour[]>([]);
   const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [isToursMenuOpen, setIsToursMenuOpen] = useState(false);
-  const [isDestinationsMenuOpen, setIsDestinationsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -73,20 +63,14 @@ const Header = () => {
     };
   }, []);
   
-  const dropdownVariants = {
-    hidden: { opacity: 0, y: 10, transition: { duration: 0.2, ease: 'easeOut' } },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.2, ease: 'easeIn' } },
-    exit: { opacity: 0, y: 10, transition: { duration: 0.2, ease: 'easeOut' } },
-  };
-
   const largeLogoVariants = {
     hidden: { opacity: 0, height: "50%", transition: { duration: 0.3, ease: 'easeOut' } },
     visible: { opacity: 1, height: "100%", transition: { duration: 0.4, ease: 'easeIn' } },
   };
 
   const smallLogoVariants = {
-     hidden: { opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } },
-     visible: { opacity: 1, transition: { duration: 0.3, ease: 'easeIn', delay: 0.1 } },
+    hidden: { opacity: 0, transition: { duration: 0.2, ease: 'easeOut' } },
+    visible: { opacity: 1, transition: { duration: 0.3, ease: 'easeIn', delay: 0.1 } },
   }
 
   return (
@@ -133,7 +117,6 @@ const Header = () => {
                       {link.label}
                     </Link>
                   ))}
-                  
                 </nav>
               </div>
             </div>
@@ -199,86 +182,9 @@ const Header = () => {
             >
               <li><Link href="/" className="text-lg hover:text-primary transition-colors">Home</Link></li>
               
-              <DropdownMenu open={isToursMenuOpen} onOpenChange={setIsToursMenuOpen} modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Link 
-                    href="/tours" 
-                    className="flex items-center gap-1 text-lg hover:text-primary transition-colors focus:outline-none"
-                    onMouseEnter={() => setIsToursMenuOpen(true)}
-                    onMouseLeave={() => setIsToursMenuOpen(false)}
-                  >
-                    Tours 
-                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isToursMenuOpen && "rotate-180")} />
-                  </Link>
-                </DropdownMenuTrigger>
-                <AnimatePresence>
-                  {isToursMenuOpen && (
-                    <DropdownMenuContent 
-                      asChild
-                      onMouseEnter={() => setIsToursMenuOpen(true)}
-                      onMouseLeave={() => setIsToursMenuOpen(false)}
-                      align="start"
-                      className="bg-background/80 backdrop-blur-md border-white/20 shadow-xl min-w-[240px]"
-                    >
-                      <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={dropdownVariants}
-                      >
-                        {tours.map((tour) => (
-                          <React.Fragment key={tour.id}>
-                            <DropdownMenuItem asChild className="font-body text-base py-2.5 px-4 focus:bg-primary/10 focus:text-primary cursor-pointer uppercase">
-                              <Link href={`/tours?tourId=${tour.id}`}>{tour.name}</Link>
-                            </DropdownMenuItem>
-                          </React.Fragment>
-                        ))}
-                      </motion.div>
-                    </DropdownMenuContent>
-                  )}
-                </AnimatePresence>
-              </DropdownMenu>
+              <li><Link href="/tours" className="text-lg hover:text-primary transition-colors">Tours</Link></li>
 
-              <DropdownMenu open={isDestinationsMenuOpen} onOpenChange={setIsDestinationsMenuOpen} modal={false}>
-                <DropdownMenuTrigger asChild>
-                  <Link 
-                    href="/destinations" 
-                    className="flex items-center gap-1 text-lg hover:text-primary transition-colors focus:outline-none"
-                    onMouseEnter={() => setIsDestinationsMenuOpen(true)}
-                    onMouseLeave={() => setIsDestinationsMenuOpen(false)}
-                  >
-                    Destinations
-                    <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isDestinationsMenuOpen && "rotate-180")} />
-                  </Link>
-                </DropdownMenuTrigger>
-                <AnimatePresence>
-                  {isDestinationsMenuOpen && (
-                    <DropdownMenuContent 
-                      asChild
-                      onMouseEnter={() => setIsDestinationsMenuOpen(true)}
-                      onMouseLeave={() => setIsDestinationsMenuOpen(false)}
-                      align="start"
-                      className="bg-background/80 backdrop-blur-md border-white/20 shadow-xl min-w-[240px]"
-                    >
-                      <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={dropdownVariants}
-                      >
-                        {destinations.map((destination) => (
-                          <React.Fragment key={destination.id}>
-                            <DropdownMenuItem asChild className="font-body text-base py-2.5 px-4 focus:bg-primary/10 focus:text-primary cursor-pointer uppercase">
-                              <Link href={`/destinations?destinationId=${destination.id}`}>{destination.name}</Link>
-                            </DropdownMenuItem>
-                          </React.Fragment>
-                        ))}
-                      </motion.div>
-                    </DropdownMenuContent>
-                  )}
-                </AnimatePresence>
-              </DropdownMenu>
-              
+              <li><Link href="/destinations" className="text-lg hover:text-primary transition-colors">Destinations</Link></li>
               
               <li><Link href="/contact" className="text-lg hover:text-primary transition-colors">Contact</Link></li>
             </ul>
@@ -324,6 +230,7 @@ const Header = () => {
                       collapsible
                       className="w-full flex flex-col gap-2"
                     >
+                      {/* Home */}
                       <SheetClose asChild>
                         <Link
                           href="/"
@@ -332,52 +239,28 @@ const Header = () => {
                           Home
                         </Link>
                       </SheetClose>
-                     
-                      <AccordionItem value="tours" className="border-b-0">
-                        <AccordionTrigger className="font-body text-xl text-foreground hover:text-primary transition-colors py-2 [&[data-state=open]>svg]:text-primary uppercase">
-                          <Link href="/tours">Tours</Link>
-                        </AccordionTrigger>
-                        <AccordionContent className="pl-4">
-                          <ul className="flex flex-col gap-2 mt-2">
-                            {tours.map(tour => (
-                              <li key={tour.id}>
-                                <SheetClose asChild>
-                                  <Link
-                                    href={`/tours?tourId=${tour.id}`}
-                                    className="text-muted-foreground hover:text-primary transition-colors uppercase"
-                                  >
-                                    {tour.name}
-                                  </Link>
-                                </SheetClose>
-                              </li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-                      
-                      <AccordionItem value="destinations" className="border-b-0">
-                        <AccordionTrigger className="font-body text-xl text-foreground hover:text-primary transition-colors py-2 [&[data-state=open]>svg]:text-primary uppercase">
-                          <Link href="/destinations">Destinations</Link>
-                        </AccordionTrigger>
-                        <AccordionContent className="pl-4">
-                          <ul className="flex flex-col gap-2 mt-2">
-                            {destinations.map(destination => (
-                              <li key={destination.id}>
-                                <SheetClose asChild>
-                                  <Link
-                                    href={`/destinations?destinationId=${destination.id}`}
-                                    className="text-muted-foreground hover:text-primary transition-colors uppercase"
-                                  >
-                                    {destination.name}
-                                  </Link>
-                                </SheetClose>
-                              </li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
 
-                     
+                      {/* Tours */}
+                      <SheetClose asChild>
+                        <Link
+                          href="/tours"
+                          className="font-body text-xl text-foreground hover:text-primary transition-colors w-full text-left py-2 uppercase"
+                        >
+                          Tours
+                        </Link>
+                      </SheetClose>
+
+                      {/* Destinations */}
+                      <SheetClose asChild>
+                        <Link
+                          href="/destinations"
+                          className="font-body text-xl text-foreground hover:text-primary transition-colors w-full text-left py-2 uppercase"
+                        >
+                          Destinations
+                        </Link>
+                      </SheetClose>
+
+                      {/* Gallery */}
                       <SheetClose asChild>
                         <Link
                           href="/gallery"
@@ -386,6 +269,8 @@ const Header = () => {
                           Gallery
                         </Link>
                       </SheetClose>
+
+                      {/* Contact */}
                       <SheetClose asChild>
                         <Link
                           href="/contact"
@@ -395,6 +280,7 @@ const Header = () => {
                         </Link>
                       </SheetClose>
 
+                      {/* About Us */}
                       <SheetClose asChild>
                         <Link
                           href="/about"
@@ -403,6 +289,8 @@ const Header = () => {
                           About Us
                         </Link>
                       </SheetClose>
+
+                      {/* Services */}
                       <SheetClose asChild>
                         <Link
                           href="/services"
@@ -411,6 +299,8 @@ const Header = () => {
                           Services
                         </Link>
                       </SheetClose>
+
+                      {/* FAQ */}
                       <SheetClose asChild>
                         <Link
                           href="/faq"
