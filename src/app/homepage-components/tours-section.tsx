@@ -1,7 +1,7 @@
 // src/app/homepage-components/tours-section.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { getTours, getHomepageSectionTitles } from '@/lib/firebase/firestore';
 import type { Tour, HomepageSectionTitles } from '@/lib/types';
@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function ToursSection() {
   const [tours, setTours] = useState<Tour[]>([]);
@@ -38,6 +40,14 @@ export default function ToursSection() {
       setActiveIndex(api.selectedScrollSnap());
     });
   }, [api]);
+  
+  const scrollPrev = useCallback(() => {
+    api?.scrollPrev()
+  }, [api])
+
+  const scrollNext = useCallback(() => {
+    api?.scrollNext()
+  }, [api])
 
   if (loading) {
     return (
@@ -113,37 +123,55 @@ export default function ToursSection() {
 
       {/* Bottom Slider */}
       <div className="absolute bottom-0 left-0 right-0 z-20">
-        <div className="bg-[#FAFAFA] py-6">
-          <Carousel
-            setApi={setApi}
-            opts={{
-              align: 'start',
-              containScroll: 'keepSnaps',
-            }}
-            className="w-full"
-          >
-            <CarouselContent className="-ml-4">
-              {tours.map((tour, index) => (
-                <CarouselItem key={tour.id} className="pl-4 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
-                  <button
-                    onClick={() => handleTourNameClick(index)}
-                    className="w-full text-left focus:outline-none"
-                  >
-                    <div className="p-4 rounded-md transition-colors duration-300">
-                      <h3
-                        className={cn(
-                          'font-headline text-lg font-light transition-colors duration-300',
-                          activeIndex === index ? 'text-foreground' : 'text-muted-foreground'
-                        )}
-                      >
-                        {tour.name}
-                      </h3>
-                    </div>
-                  </button>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-          </Carousel>
+        <div className="bg-[#FAFAFA] py-6 relative">
+          <div className="container mx-auto px-4 flex items-center gap-4">
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={scrollPrev}
+                className="hidden md:inline-flex"
+            >
+                <ChevronLeft className="h-6 w-6" />
+            </Button>
+            <Carousel
+                setApi={setApi}
+                opts={{
+                align: 'start',
+                containScroll: 'keepSnaps',
+                }}
+                className="w-full"
+            >
+                <CarouselContent className="-ml-4">
+                {tours.map((tour, index) => (
+                    <CarouselItem key={tour.id} className="pl-4 md:basis-1/3 lg:basis-1/4 xl:basis-1/5">
+                    <button
+                        onClick={() => handleTourNameClick(index)}
+                        className="w-full text-left focus:outline-none"
+                    >
+                        <div className="p-4 rounded-md transition-colors duration-300">
+                        <h3
+                            className={cn(
+                            'font-headline text-lg font-light transition-colors duration-300',
+                            activeIndex === index ? 'text-foreground' : 'text-muted-foreground'
+                            )}
+                        >
+                            {tour.name}
+                        </h3>
+                        </div>
+                    </button>
+                    </CarouselItem>
+                ))}
+                </CarouselContent>
+            </Carousel>
+            <Button
+                variant="ghost"
+                size="icon"
+                onClick={scrollNext}
+                className="hidden md:inline-flex"
+            >
+                <ChevronRight className="h-6 w-6" />
+            </Button>
+          </div>
         </div>
       </div>
     </section>
