@@ -55,10 +55,10 @@ const WelcomePart = ({
   return (
      <section 
       ref={sectionRef}
-      className="flex flex-col md:flex-row bg-background text-foreground overflow-hidden pt-[5rem]"
+      className="grid grid-cols-1 md:grid-cols-2 bg-background text-foreground overflow-hidden"
     >
         {/* Content Column */}
-        <div className={`w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 ${contentOrderClass}`}>
+        <div className={`flex items-center justify-center p-8 md:p-16 bg-[#F5F5F5] ${contentOrderClass}`}>
             <div className="max-w-md text-center md:text-left">
                  <h2 className="font-headline text-[2.5rem]  md:text-5xl font-extralight uppercase text-black" style={{ lineHeight: '3rem'}}>
                     {headline}
@@ -75,7 +75,7 @@ const WelcomePart = ({
         </div>
 
         {/* Image Column with Parallax */}
-        <div className={`w-full md:w-1/2 h-[70vh] relative order-1 ${imageOrderClass}`}>
+        <div className={`w-full h-[70vh] md:h-auto relative ${imageOrderClass}`}>
             {showImage && image && (
                 <div className="absolute inset-0 overflow-hidden">
                     <motion.div style={{ y }} className="relative h-full w-full">
