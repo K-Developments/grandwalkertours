@@ -108,7 +108,7 @@ export default function HeroSlider() {
 
   if (loading) {
     return (
-      <section className="relative !h-[50vh] md:h-screen w-full bg-black flex items-center justify-center">
+      <section className="relative !h-[50vh] md:h-screen w-full flex items-center justify-center">
         <div className="text-center text-primary">
           <h2 className="text-2xl font-bold">Grand Walker Tours</h2>
         </div>
@@ -118,8 +118,8 @@ export default function HeroSlider() {
 
   if (slides.length === 0) {
     return (
-      <section className="relative h-[60vh] md:h-screen w-full bg-gray-900 flex items-center justify-center">
-        <div className="text-center text-white">
+      <section className="relative h-[60vh] md:h-screen w-full flex items-center justify-center">
+        <div className="text-center text-black">
           <h2 className="text-2xl font-bold">No slides available.</h2>
           <p>Please add slides in the admin dashboard.</p>
         </div>
@@ -132,7 +132,7 @@ export default function HeroSlider() {
   return (
     <section 
       id="home" 
-      className="relative h-[50vh] md:h-screen w-full overflow-hidden bg-black"
+      className="relative h-[50vh] md:h-screen w-full overflow-hidden"
     >
       {showVideo && introVideoUrl ? (
         <video
@@ -180,7 +180,7 @@ export default function HeroSlider() {
                         sizes="100vw"
                         quality={95}
                     />
-                    <div className="absolute inset-0 bg-black/30 z-10" />
+                    <div className="absolute inset-0  z-10" />
                 </motion.div>
             )}
           </AnimatePresence>
@@ -188,7 +188,7 @@ export default function HeroSlider() {
       )}
 
       {/* Bottom Content Box */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-black text-white ">
+      <div className="absolute bottom-0 left-0 right-0 z-20  text-white ">
         <div className="container mx-auto px-4 py-4 md:py-12">
             <AnimatePresence mode="wait">
                 <motion.div 

@@ -34,6 +34,26 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      // Add jsDelivr patterns
+      {
+        protocol: 'https',
+        hostname: 'cdn.jsdelivr.net',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.jsdelivr.net', // Wildcard for subdomains
+        port: '',
+        pathname: '/**',
+      },
+      // For GitHub raw content via jsDelivr
+      {
+        protocol: 'https',
+        hostname: '*.githubusercontent.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
 };

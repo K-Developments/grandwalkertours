@@ -55,7 +55,7 @@ const WelcomePart = ({
   return (
      <section 
       ref={sectionRef}
-      className="flex flex-col md:flex-row bg-background text-foreground overflow-hidden"
+      className="flex flex-col md:flex-row bg-background text-foreground overflow-hidden pt-[5rem]"
     >
         {/* Content Column */}
         <div className={`w-full md:w-1/2 flex items-center justify-center p-8 md:p-16 ${contentOrderClass}`}>
@@ -130,7 +130,7 @@ export default function WelcomeSection() {
 
   if (!content) {
      return (
-      <section id="welcome" className="py-16 md:py-24 bg-muted">
+      <section id="welcome" className="py-16 md:py-24 bg-muted pt-[5rem]">
         <div className="container mx-auto px-4 text-center">
           <h2 className="font-headline text-3xl md:text-5xl font-extralight uppercase">Welcome Section Not Configured</h2>
           <p>Please configure the welcome section in the admin dashboard.</p>

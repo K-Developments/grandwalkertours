@@ -94,7 +94,7 @@ const Header = () => {
       className={cn(
         'fixed top-0 left-0 w-full z-50 transition-all duration-300 md:border-none border-t-[0.3rem] border-primary ',
         isScrolled || isMobile
-          ? 'bg-[hsl(var(--background))] shadow-md'
+          ? 'bg-[hsl(var(--background))]  shadow-md'
           : 'bg-transparent'
       )}
     >
@@ -166,7 +166,7 @@ const Header = () => {
                     alt="Grand Walker Tours Logo"
                     width={150}
                     height={150}
-                    className="object-contain bg-black"
+                    className="object-contain "
                    />
                 </motion.div>
               ) : (
