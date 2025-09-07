@@ -209,7 +209,7 @@ export default function HeroSlider() {
       <div className="absolute bottom-0 left-0 right-0 z-20 bg-transparent">
         <div className="flex justify-center px-4 py-4 md:py-8">
           {/* Content Div - 60% width */}
-          <div className="w-full max-w-[60%]">
+          <div className="w-full md:max-w-[60%]">
             <AnimatePresence mode="wait">
               <motion.div 
                 key={current}
@@ -217,12 +217,12 @@ export default function HeroSlider() {
                 animate="visible"
                 exit="hidden"
                 variants={containerVariants}
-                className="grid grid-cols-2 items-center  text-white "
+                className="grid md:grid-cols-2  grid-col-1 items-center  text-white "
               >
                 {/* Left Side - Quote */}
-                <div className="overflow-hidden border-r-2 border-white text-white">
+                <div className="overflow-hidden border-r-2 border-white text-white hidden md:block">
                   <motion.div 
-                    className="text-right mr-5"
+                    className="text-right mr-5 md:display-block display-none"
                     variants={slideFromLeft}
                   >
                     <p className="text-sm md:text-base lg:text-lg font-light italic text-white ">
@@ -239,7 +239,7 @@ export default function HeroSlider() {
                 {/* Right Side - Title */}
                 <div className="overflow-hidden">
                   <motion.h1 
-                    className="font-headline font-light text-xl md:text-3xl lg:text-5xl tracking-tight text-left ml-5"
+                    className="font-headline font-light text-3xl md:text-3xl lg:text-5xl tracking-tight text-left ml-5"
                     variants={slideFromRight}
                   >
                     {currentSlide?.headline}
