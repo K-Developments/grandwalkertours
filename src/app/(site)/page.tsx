@@ -16,7 +16,7 @@ export default function Home() {
   return (
     <>
       <HeroSlider />
-      <MotionWrapper>
+      <MotionWrapper className="pt-20">
         <WelcomeSection />
       </MotionWrapper>
       <MotionWrapper>
