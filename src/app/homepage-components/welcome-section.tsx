@@ -1,14 +1,12 @@
 // src/app/homepage-components/welcome-section.tsx
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getWelcomeSectionContent } from '@/lib/firebase/firestore';
 import type { WelcomeSectionContent as WelcomeSectionContentType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import Image from 'next/image';
 
 const isValidUrl = (url?: string): boolean => {
   if (!url) return false;
@@ -37,12 +35,6 @@ const WelcomePart = ({
   buttonLink?: string;
   imagePosition?: 'left' | 'right';
 }) => {
-  const sectionRef = useRef<HTMLElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ['start end', 'end start'],
-  });
-  const y = useTransform(scrollYProgress, [0, 1], ['-15%', '15%']);
 
   if (!headline && !description && !image) {
     return null;
@@ -54,7 +46,6 @@ const WelcomePart = ({
 
   return (
      <section 
-      ref={sectionRef}
       className="grid grid-cols-1 md:grid-cols-2 bg-background text-foreground overflow-hidden"
     >
         {/* Content Column */}
@@ -74,21 +65,14 @@ const WelcomePart = ({
             </div>
         </div>
 
-        {/* Image Column with Parallax */}
+        {/* Image Column with CSS Parallax */}
         <div className={`w-full h-[70vh] md:h-auto relative ${imageOrderClass}`}>
             {showImage && image && (
-                <div className="absolute inset-0 overflow-hidden">
-                    <motion.div style={{ y }} className="relative h-full w-full">
-                        <Image
-                            src={image}
-                            alt={headline || 'Welcome section image'}
-                            fill
-                            className="object-cover scale-125" // Scale up image to allow for parallax movement
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                            quality={100}
-                            data-ai-hint={imageHint}
-                        />
-                    </motion.div>
+                <div 
+                  className="absolute inset-0 bg-cover bg-center bg-fixed"
+                  style={{ backgroundImage: `url(${image})` }}
+                  data-ai-hint={imageHint}
+                >
                     <div className="absolute inset-4 border-2 border-white/80 pointer-events-none"></div>
                 </div>
             )}
