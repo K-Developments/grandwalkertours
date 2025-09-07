@@ -177,7 +177,7 @@ export default function ToursSection() {
 
       {/* Mobile Layout */}
       <div className="lg:hidden w-full flex flex-col">
-        <div className="p-8 bg-background">
+        <div className="p-8 bg-[#FAFAFA]">
            <h2 className="font-headline text-3xl font-light text-black mb-4 text-center">
               {titles?.toursTitle || 'Featured Tours'}
             </h2>
