@@ -279,7 +279,7 @@ const Header = () => {
                 </AnimatePresence>
               </DropdownMenu>
               
-              <li><Link href="/rent-a-car" className="text-lg hover:text-primary transition-colors">Rent a Car</Link></li>
+              
               <li><Link href="/contact" className="text-lg hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </nav>
@@ -377,14 +377,7 @@ const Header = () => {
                         </AccordionContent>
                       </AccordionItem>
 
-                      <SheetClose asChild>
-                        <Link
-                          href="/rent-a-car"
-                          className="font-body text-xl text-foreground hover:text-primary transition-colors w-full text-left py-2 uppercase"
-                        >
-                          Rent a Car
-                        </Link>
-                      </SheetClose>
+                     
                       <SheetClose asChild>
                         <Link
                           href="/gallery"
