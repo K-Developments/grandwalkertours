@@ -51,7 +51,7 @@ const WelcomePart = ({
         {/* Content Column */}
         <div className={`flex items-center justify-center p-8 md:p-16 bg-[#F5F5F5] ${contentOrderClass}`}>
             <div className="max-w-md text-center md:text-left">
-                 <h2 className="font-headline text-[2.5rem]  md:text-5xl font-extralight uppercase text-black" style={{ lineHeight: '3rem'}}>
+                 <h2 className="font-headline text-3xl md:text-4xl font-extralight uppercase text-black">
                     {headline}
                 </h2>
                 <p className="mt-4 text-base md:text-lg text-muted-foreground">
