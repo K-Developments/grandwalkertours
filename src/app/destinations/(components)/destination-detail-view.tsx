@@ -2,6 +2,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import type { Destination } from '@/lib/types';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,10 +12,9 @@ import { motion } from 'framer-motion';
 
 type DestinationDetailViewProps = {
   destination: Destination;
-  onBack: () => void;
 };
 
-const DestinationDetailView = ({ destination, onBack }: DestinationDetailViewProps) => {
+const DestinationDetailView = ({ destination }: DestinationDetailViewProps) => {
   return (
     <div className="bg-background">
       {/* Hero Image & Title */}
@@ -113,9 +113,11 @@ const DestinationDetailView = ({ destination, onBack }: DestinationDetailViewPro
 
         {/* Back Button */}
         <div className="text-center mt-16 md:mt-24">
-          <Button variant="outline" onClick={onBack}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to All Destinations
+          <Button variant="outline" asChild>
+            <Link href="/destinations">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to All Destinations
+            </Link>
           </Button>
         </div>
       </div>

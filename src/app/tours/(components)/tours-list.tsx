@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { Tour, TourPageIntroContent } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -14,10 +15,9 @@ import { Search } from 'lucide-react';
 type ToursListProps = {
   tours: Tour[];
   intro: TourPageIntroContent | null;
-  onTourSelect: (id: string, name: string) => void;
 };
 
-const ToursList = ({ tours, intro, onTourSelect }: ToursListProps) => {
+const ToursList = ({ tours, intro }: ToursListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredTours = (tours || []).filter(tour =>
@@ -103,8 +103,8 @@ const ToursList = ({ tours, intro, onTourSelect }: ToursListProps) => {
                         <Separator className="my-6" />
                         <p className="mb-6 text-muted-foreground">{tour.description}</p>
                         {tour.id && (
-                        <Button variant="outline" onClick={() => onTourSelect(tour.id!, tour.name)}>
-                            Read More
+                        <Button variant="outline" asChild>
+                          <Link href={`/tours/${tour.id}`}>Read More</Link>
                         </Button>
                         )}
                     </motion.div>

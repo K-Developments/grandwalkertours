@@ -1,55 +1,22 @@
 // src/app/destinations/destinations-page-client.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import DestinationsHero from '@/app/destinations/(components)/hero';
 import DestinationsList from '@/app/destinations/(components)/destinations-list';
-import DestinationDetailView from '@/app/destinations/(components)/destination-detail-view';
 import type { Destination, DestinationPageHeroContent, DestinationPageIntroContent } from '@/lib/types';
 
 type DestinationsPageClientProps = {
     heroContent: DestinationPageHeroContent | null;
     introContent: DestinationPageIntroContent | null;
     destinations: Destination[];
-    initialDestinationId?: string;
-    initialDestinationName?: string | null;
-    initialDestinationDetail?: Destination | null;
 }
 
 export default function DestinationsPageClient({
     heroContent,
     introContent,
     destinations,
-    initialDestinationId,
-    initialDestinationName,
-    initialDestinationDetail,
 }: DestinationsPageClientProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const [destinationId, setDestinationId] = useState(initialDestinationId);
-  const [destinationName, setDestinationName] = useState(initialDestinationName);
-  const [destinationDetail, setDestinationDetail] = useState(initialDestinationDetail);
-
-  useEffect(() => {
-    setDestinationId(initialDestinationId);
-    setDestinationName(initialDestinationName);
-    setDestinationDetail(initialDestinationDetail);
-  }, [initialDestinationId, initialDestinationName, initialDestinationDetail]);
-
-
-  const handleDestinationSelect = (id: string, name: string) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('destinationId', id);
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
-  };
-
-  const handleBackToList = () => {
-    router.push(pathname, { scroll: false });
-  };
   
   return (
     <>
@@ -65,34 +32,14 @@ export default function DestinationsPageClient({
               <li>
                 <div className="flex items-center">
                   <span className="mx-2 text-muted-foreground">--&gt;</span>
-                  {destinationId ? (
-                      <button onClick={handleBackToList} className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary">
-                        Our Destinations
-                      </button>
-                  ) : (
-                      <span className="ml-1 text-sm font-medium text-foreground md:ml-2">Our Destinations</span>
-                  )}
+                  <span className="ml-1 text-sm font-medium text-foreground md:ml-2">Our Destinations</span>
                 </div>
               </li>
-                {destinationId && destinationName && (
-                <li aria-current="page">
-                  <div className="flex items-center">
-                    <span className="mx-2 text-muted-foreground">--&gt;</span>
-                    <span className="ml-1 text-sm font-medium text-foreground md:ml-2 line-clamp-1">
-                      {destinationName}
-                    </span>
-                  </div>
-                </li>
-              )}
             </ol>
           </nav>
       </div>
 
-      {destinationId && destinationDetail ? (
-        <DestinationDetailView destination={destinationDetail} onBack={handleBackToList} />
-      ) : (
-        <DestinationsList destinations={destinations} intro={introContent} onDestinationSelect={handleDestinationSelect} />
-      )}
+      <DestinationsList destinations={destinations} intro={introContent} />
     </>
   );
 }

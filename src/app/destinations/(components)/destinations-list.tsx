@@ -1,8 +1,9 @@
 // src/app/destinations/(components)/destinations-list.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import type { Destination, DestinationPageIntroContent } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
@@ -12,10 +13,9 @@ import { Search } from 'lucide-react';
 type DestinationsListProps = {
   destinations: Destination[];
   intro: DestinationPageIntroContent | null;
-  onDestinationSelect: (id: string, name: string) => void;
 };
 
-const DestinationsList = ({ destinations, intro, onDestinationSelect }: DestinationsListProps) => {
+const DestinationsList = ({ destinations, intro }: DestinationsListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredDestinations = (destinations || []).filter(destination => 
@@ -60,7 +60,7 @@ const DestinationsList = ({ destinations, intro, onDestinationSelect }: Destinat
           <div className="flex flex-wrap justify-center gap-8">
             {filteredDestinations.map((destination) => (
               <MotionWrapper key={destination.id} className="w-full lg:w-[45%]">
-                <div className="relative group overflow-hidden md:h-[70vh] h-[45vh]">
+                 <div className="relative group overflow-hidden md:h-[70vh] h-[45vh]">
                    <Image 
                       src={destination.image} 
                       alt={destination.name} 
@@ -89,10 +89,10 @@ const DestinationsList = ({ destinations, intro, onDestinationSelect }: Destinat
                       {destination.id && (
                         <Button
                           variant="ghost"
-                          onClick={() => onDestinationSelect(destination.id!, destination.name)}
+                          asChild
                           className="border border-white text-white hover:text-white hover:bg-primary hover:border-[inherit]"
                         >
-                            Read More
+                            <Link href={`/destinations/${destination.id}`}>Read More</Link>
                         </Button>
                       )}
                     </div>

@@ -1,6 +1,6 @@
 // src/app/tours/page.tsx
 import ToursPageClient from './tours-page-client';
-import { getTourPageHeroContentSSG, getTourPageIntroContentSSG, getSsgTourPageTours, getTourPageTourById } from '@/lib/firebase/firestore';
+import { getTourPageHeroContentSSG, getTourPageIntroContentSSG, getSsgTourPageTours } from '@/lib/firebase/firestore';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
@@ -11,25 +11,10 @@ export const metadata: Metadata = {
     description: 'Browse our collection of expertly curated tours. From cultural heritage explorations to thrilling adventures, Grand Walker Tours offers a journey for every traveler.',
 };
 
-async function getTourData(tourId?: string) {
-    if (!tourId) {
-        return { name: null, detail: null };
-    }
-    const tour = await getTourPageTourById(tourId);
-    return {
-        name: tour?.name || 'Tour Details',
-        detail: tour,
-    };
-}
-
-
-export default async function ToursPage({ searchParams }: { searchParams: { tourId?: string } }) {
-    const { tourId } = searchParams;
-
+export default async function ToursPage() {
     const heroContent = await getTourPageHeroContentSSG();
     const introContent = await getTourPageIntroContentSSG();
     const tours = await getSsgTourPageTours() || [];
-    const { name: tourName, detail: tourDetail } = await getTourData(tourId);
     
     return (
         <Suspense fallback={<div>Loading...</div>}>
@@ -37,9 +22,6 @@ export default async function ToursPage({ searchParams }: { searchParams: { tour
                 heroContent={heroContent}
                 introContent={introContent}
                 tours={tours}
-                initialTourId={tourId}
-                initialTourName={tourName}
-                initialTourDetail={tourDetail}
             />
         </Suspense>
     );
