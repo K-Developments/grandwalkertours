@@ -1,6 +1,6 @@
 // src/app/(site)/faq/page.tsx
 import Link from 'next/link';
-import { getSsgFaqItems, getFaqPageHeroContent } from '@/lib/firebase/firestore';
+import { getSsgFaqItems, getFaqPageHeroContentSSG } from '@/lib/firebase/firestore';
 import {
   Accordion,
   AccordionContent,
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 
 export default async function FAQPage() {
   const faqItems = await getSsgFaqItems();
-  const heroContent = await getFaqPageHeroContent();
+  const heroContent = await getFaqPageHeroContentSSG();
 
   return (
     <>
