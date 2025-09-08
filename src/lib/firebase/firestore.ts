@@ -15,7 +15,7 @@ import {
   getDocs,
   where,
 } from 'firebase/firestore';
-import type { HeroSlide, WelcomeSectionContent, Destination, Tour, Service, AboutHeroContent, MissionVisionContent, WhyChooseUsItem, Testimonial, ServicePageHeroContent, ServicePageIntroContent, TourPageHeroContent, TourPageIntroContent, DestinationPageHeroContent, DestinationPageIntroContent, ContactPageHeroContent, ContactPageDetailsContent, CookieConsentLog, FAQItem, FaqPageHeroContent, HomepageSectionTitles, AboutSectionTitles, CookiePolicyContent, PrivacyPolicyContent, GalleryItem, GalleryPageHeroContent, BlogPageHeroContent, BlogPost } from '@/lib/types';
+import type { HeroSlide, WelcomeSectionContent, Destination, Tour, Service, AboutHeroContent, MissionVisionContent, WhyChooseUsItem, Testimonial, ServicePageHeroContent, ServicePageIntroContent, TourPageHeroContent, TourPageIntroContent, DestinationPageHeroContent, DestinationPageIntroContent, ContactPageHeroContent, ContactPageDetailsContent, FAQItem, FaqPageHeroContent, HomepageSectionTitles, AboutSectionTitles, CookiePolicyContent, PrivacyPolicyContent, GalleryItem, GalleryPageHeroContent, BlogPageHeroContent, BlogPost } from '@/lib/types';
 import { cache } from 'react';
 
 
@@ -24,10 +24,14 @@ import { cache } from 'react';
 const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
+const checkEnvVariables = () => {
+  if (typeof window === 'undefined') { // Only run this check on the server
+    if (!PROJECT_ID || !API_KEY) {
+      throw new Error("Firebase Project ID or API Key is not configured in environment variables.");
+    }
+  }
+};
 
-if (!PROJECT_ID || !API_KEY) {
-  throw new Error("Firebase Project ID or API Key is not configured in environment variables.");
-}
 
 const API_BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
 
@@ -86,6 +90,7 @@ const parseFirestoreResponse = (doc: any, isCollection = false) => {
 };
 
 const fetchFirestoreDoc = cache(async (path: string) => {
+    checkEnvVariables();
     const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
     
     const res = await fetch(url, { next: { revalidate: false } }); // No revalidation for static build
@@ -104,6 +109,7 @@ const fetchFirestoreDoc = cache(async (path: string) => {
 });
 
 const fetchFirestoreCollection = cache(async (path: string, options?: { revalidate: number | false | undefined }) => {
+    checkEnvVariables();
     const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
     
     const res = await fetch(url, { next: { revalidate: options?.revalidate ?? false } });
@@ -155,7 +161,6 @@ const TOUR_PAGE_TOURS_COLLECTION = 'tourPageTours';
 const SERVICES_COLLECTION = 'services';
 const SERVICE_PAGE_SERVICES_COLLECTION = 'servicePageServices';
 const BLOG_POSTS_COLLECTION = 'blogPosts';
-const COOKIE_CONSENT_LOGS_COLLECTION = 'cookieConsentLogs';
 const FAQ_COLLECTION = 'faq';
 const COOKIE_POLICY_DOC = 'cookiePolicy';
 const PRIVACY_POLICY_DOC = 'privacyPolicy';
@@ -259,7 +264,12 @@ export async function getBlogPostById(id: string) {
     const docRef = doc(db, BLOG_POSTS_COLLECTION, id);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-        return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+        const data = docSnap.data();
+        return { 
+            id: docSnap.id, 
+            ...data,
+            publishedAt: (data.publishedAt as Timestamp) // Keep as Timestamp for server-side
+        } as BlogPost;
     }
     return null;
 }
@@ -306,17 +316,6 @@ export async function updateGalleryItem(id: string, item: Partial<GalleryItem>) 
 }
 export async function deleteGalleryItem(id: string) {
     return await deleteDoc(doc(db, GALLERY_COLLECTION, id));
-}
-export async function logCookieConsent() {
-    return await addDoc(collection(db, COOKIE_CONSENT_LOGS_COLLECTION), { consentedAt: Timestamp.now() });
-}
-export async function getCookieConsentLogs(callback: (logs: CookieConsentLog[]) => void) {
-    const q = query(collection(db, COOKIE_CONSENT_LOGS_COLLECTION), orderBy('consentedAt', 'desc'));
-    return onSnapshot(q, (querySnapshot) => {
-        const logs: CookieConsentLog[] = [];
-        querySnapshot.forEach((doc) => logs.push({ id: doc.id, ...doc.data() } as CookieConsentLog));
-        callback(logs);
-    });
 }
 export async function getDestinationPageDestinations(callback: (destinations: Destination[]) => void) {
   const q = query(collection(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION));
@@ -369,9 +368,10 @@ export const getSsgWhyChooseUsItems = () => fetchFirestoreCollection(WHY_CHOOSE_
 export const getSsgTestimonials = () => fetchFirestoreCollection(TESTIMONIALS_COLLECTION) as Promise<Testimonial[]>;
 export const getBlogPosts = () => fetchFirestoreCollection(BLOG_POSTS_COLLECTION) as Promise<BlogPost[]>;
 export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> => {
-    const posts = await getBlogPosts();
+    const posts = await getBlogPosts() as BlogPost[];
     const post = posts.find(p => p.slug === slug);
-    return post ? { ...post, publishedAt: new Date(post.publishedAt) } : null;
+    // The timestamp is already a Date object from parseFirestoreResponse
+    return post ? post : null;
 };
 export const getFaqPageHeroContent = () => fetchFirestoreDoc(`${FAQPAGE_COLLECTION}/${FAQ_PAGE_HERO_DOC}`) as Promise<FaqPageHeroContent | null>;
 export const getSsgFaqItems = () => fetchFirestoreCollection(FAQ_COLLECTION) as Promise<FAQItem[]>;
@@ -392,3 +392,208 @@ export const getSsgTourPageTours = () => fetchFirestoreCollection(TOUR_PAGE_TOUR
 export const getTourPageTourById = (id: string) => fetchFirestoreDoc(`${TOUR_PAGE_TOURS_COLLECTION}/${id}`) as Promise<Tour | null>;
 export const getPrivacyPolicyContent = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${PRIVACY_POLICY_DOC}`) as Promise<PrivacyPolicyContent | null>;
 export const getCookiePolicyContent = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${COOKIE_POLICY_DOC}`) as Promise<CookiePolicyContent | null>;
+export async function updateServicePageService(id: string, service: Partial<Service>) {
+  return await updateDoc(doc(db, SERVICE_PAGE_SERVICES_COLLECTION, id), service);
+}
+export async function deleteServicePageService(id: string) {
+  return await deleteDoc(doc(db, SERVICE_PAGE_SERVICES_COLLECTION, id));
+}
+export async function addServicePageService(service: Omit<Service, 'id'>) {
+    return await addDoc(collection(db, SERVICE_PAGE_SERVICES_COLLECTION), service);
+}
+export function getServicePageServices(callback: (services: Service[]) => void) {
+    const q = query(collection(db, SERVICE_PAGE_SERVICES_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+        const services: Service[] = [];
+        snapshot.forEach((doc) => {
+            services.push({ id: doc.id, ...doc.data() } as Service);
+        });
+        callback(services);
+    });
+}
+export function getSlides(callback: (slides: HeroSlide[]) => void) {
+  const q = query(collection(db, SLIDES_COLLECTION));
+  return onSnapshot(q, (snapshot) => {
+    const slides: HeroSlide[] = [];
+    snapshot.forEach((doc) => {
+      slides.push({ id: doc.id, ...doc.data() } as HeroSlide);
+    });
+    callback(slides);
+  });
+}
+export function getDestinations(callback: (destinations: Destination[]) => void) {
+    const q = query(collection(db, DESTINATIONS_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+        const destinations: Destination[] = [];
+        snapshot.forEach((doc) => {
+            destinations.push({ id: doc.id, ...doc.data() } as Destination);
+        });
+        callback(destinations);
+    });
+}
+export function getTours(callback: (tours: Tour[]) => void) {
+    const q = query(collection(db, TOURS_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+        const tours: Tour[] = [];
+        snapshot.forEach((doc) => {
+            tours.push({ id: doc.id, ...doc.data() } as Tour);
+        });
+        callback(tours);
+    });
+}
+export function getServices(callback: (services: Service[]) => void) {
+    const q = query(collection(db, SERVICES_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+        const services: Service[] = [];
+        snapshot.forEach((doc) => {
+            services.push({ id: doc.id, ...doc.data() } as Service);
+        });
+        callback(services);
+    });
+}
+
+// Real-time listeners for CMS content (Read-only)
+export function getWelcomeSectionContent(callback: (content: WelcomeSectionContent | null) => void) {
+    return onSnapshot(doc(db, HOMEPAGE_COLLECTION, WELCOME_SECTION_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as WelcomeSectionContent : null);
+    });
+}
+export function getHomepageSectionTitles(callback: (titles: HomepageSectionTitles | null) => void) {
+    return onSnapshot(doc(db, HOMEPAGE_COLLECTION, HOMEPAGE_SECTION_TITLES_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as HomepageSectionTitles : null);
+    });
+}
+export function getAboutHeroContent(callback: (content: AboutHeroContent | null) => void) {
+    return onSnapshot(doc(db, ABOUTPAGE_COLLECTION, ABOUT_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as AboutHeroContent : null);
+    });
+}
+export function getMissionVisionContent(callback: (content: MissionVisionContent | null) => void) {
+    return onSnapshot(doc(db, ABOUTPAGE_COLLECTION, MISSION_VISION_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as MissionVisionContent : null);
+    });
+}
+export function getAboutSectionTitles(callback: (titles: AboutSectionTitles | null) => void) {
+    return onSnapshot(doc(db, ABOUTPAGE_COLLECTION, ABOUT_SECTION_TITLES_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as AboutSectionTitles : null);
+    });
+}
+export function getBlogPageHeroContent(callback: (content: BlogPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as BlogPageHeroContent : null);
+    });
+}
+export function getBlogPosts(callback: (posts: BlogPost[]) => void) {
+    const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('publishedAt', 'desc'));
+    return onSnapshot(q, (snapshot) => {
+        const posts: BlogPost[] = [];
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            posts.push({ 
+                id: doc.id, 
+                ...data,
+                publishedAt: (data.publishedAt as Timestamp)
+            } as BlogPost);
+        });
+        callback(posts);
+    });
+}
+export function getContactPageDetailsContent(callback: (content: ContactPageDetailsContent | null) => void) {
+    return onSnapshot(doc(db, CONTACTPAGE_COLLECTION, CONTACT_DETAILS_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ContactPageDetailsContent : null);
+    });
+}
+export async function updateContactPageDetailsContent(content: ContactPageDetailsContent) {
+    return await setDoc(doc(db, CONTACTPAGE_COLLECTION, CONTACT_DETAILS_DOC), content, { merge: true });
+}
+export function getContactPageHeroContent(callback: (content: ContactPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, CONTACTPAGE_COLLECTION, CONTACT_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ContactPageHeroContent : null);
+    });
+}
+export async function updateContactPageHeroContent(content: ContactPageHeroContent) {
+    return await setDoc(doc(db, CONTACTPAGE_COLLECTION, CONTACT_PAGE_HERO_DOC), content, { merge: true });
+}
+export function getDestinationPageHeroContent(callback: (content: DestinationPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as DestinationPageHeroContent : null);
+    });
+}
+export async function updateDestinationPageHeroContent(content: DestinationPageHeroContent) {
+    return await setDoc(doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_HERO_DOC), content, { merge: true });
+}
+export function getDestinationPageIntroContent(callback: (content: DestinationPageIntroContent | null) => void) {
+    return onSnapshot(doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_INTRO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as DestinationPageIntroContent : null);
+    });
+}
+export async function updateDestinationPageIntroContent(content: DestinationPageIntroContent) {
+    return await setDoc(doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_INTRO_DOC), content, { merge: true });
+}
+export function getFaqPageHeroContent(callback: (content: FaqPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, FAQPAGE_COLLECTION, FAQ_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as FaqPageHeroContent : null);
+    });
+}
+export async function updateFaqPageHeroContent(content: FaqPageHeroContent) {
+    return await setDoc(doc(db, FAQPAGE_COLLECTION, FAQ_PAGE_HERO_DOC), content, { merge: true });
+}
+export function getGalleryPageHeroContent(callback: (content: GalleryPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, GALLERYPAGE_COLLECTION, GALLERY_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as GalleryPageHeroContent : null);
+    });
+}
+export async function updateGalleryPageHeroContent(content: GalleryPageHeroContent) {
+    return await setDoc(doc(db, GALLERYPAGE_COLLECTION, GALLERY_PAGE_HERO_DOC), content, { merge: true });
+}
+export function getCookiePolicyContent(callback: (content: CookiePolicyContent | null) => void) {
+    return onSnapshot(doc(db, LEGALPAGE_COLLECTION, COOKIE_POLICY_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as CookiePolicyContent : null);
+    });
+}
+export async function updateCookiePolicyContent(content: CookiePolicyContent) {
+    return await setDoc(doc(db, LEGALPAGE_COLLECTION, COOKIE_POLICY_DOC), content, { merge: true });
+}
+export function getPrivacyPolicyContent(callback: (content: PrivacyPolicyContent | null) => void) {
+    return onSnapshot(doc(db, LEGALPAGE_COLLECTION, PRIVACY_POLICY_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as PrivacyPolicyContent : null);
+    });
+}
+export async function updatePrivacyPolicyContent(content: PrivacyPolicyContent) {
+    return await setDoc(doc(db, LEGALPAGE_COLLECTION, PRIVACY_POLICY_DOC), content, { merge: true });
+}
+export function getServicePageHeroContent(callback: (content: ServicePageHeroContent | null) => void) {
+    return onSnapshot(doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ServicePageHeroContent : null);
+    });
+}
+export async function updateServicePageHeroContent(content: ServicePageHeroContent) {
+    return await setDoc(doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_HERO_DOC), content, { merge: true });
+}
+export function getServicePageIntroContent(callback: (content: ServicePageIntroContent | null) => void) {
+    return onSnapshot(doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_INTRO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ServicePageIntroContent : null);
+    });
+}
+export async function updateServicePageIntroContent(content: ServicePageIntroContent) {
+    return await setDoc(doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_INTRO_DOC), content, { merge: true });
+}
+export function getTourPageHeroContent(callback: (content: TourPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as TourPageHeroContent : null);
+    });
+}
+export async function updateTourPageHeroContent(content: TourPageHeroContent) {
+    return await setDoc(doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_HERO_DOC), content, { merge: true });
+}
+export function getTourPageIntroContent(callback: (content: TourPageIntroContent | null) => void) {
+    return onSnapshot(doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_INTRO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as TourPageIntroContent : null);
+    });
+}
+export async function updateTourPageIntroContent(content: TourPageIntroContent) {
+    return await setDoc(doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_INTRO_DOC), content, { merge: true });
+}
+export async function updateBlogPageHeroContent(content: BlogPageHeroContent) {
+    return await setDoc(doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC), content, { merge: true });
+}

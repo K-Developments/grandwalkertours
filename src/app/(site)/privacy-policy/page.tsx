@@ -1,8 +1,6 @@
 // src/app/(site)/privacy-policy/page.tsx
 import { getPrivacyPolicyContent } from '@/lib/firebase/firestore';
-import type { PrivacyPolicyContent } from '@/lib/types';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-static';

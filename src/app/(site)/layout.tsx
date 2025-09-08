@@ -1,6 +1,5 @@
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import CookieConsentBanner from '@/components/cookie-consent-banner';
 
 export default function SiteLayout({
   children,
@@ -12,7 +11,6 @@ export default function SiteLayout({
       <Header />
       <main className="flex-grow">{children}</main>
       <Footer />
-      <CookieConsentBanner />
     </div>
   );
 }

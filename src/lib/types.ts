@@ -190,11 +190,6 @@ export type ContactFormSubmission = {
     submittedAt: Date;
 };
 
-export type CookieConsentLog = {
-  id?: string;
-  consentedAt: Timestamp;
-};
-
 export type FAQItem = {
   id?: string;
   question: string;

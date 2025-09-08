@@ -40,7 +40,6 @@ const navItems = [
   { href: '/admin/rent-a-car', icon: Car, label: 'Rent a Car' },
   { href: '/admin/contact', icon: Phone, label: 'Contact Page' },
   { href: '/admin/faq', icon: HelpCircle, label: 'FAQ Page' },
-  { href: '/admin/user-tracking', icon: Users, label: 'User Tracking' },
   { href: '/admin/legal', icon: Gavel, label: 'Legal Pages' },
 ];
 
