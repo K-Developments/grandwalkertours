@@ -2,12 +2,24 @@
 import DestinationsPageClient from './destinations-page-client';
 import { getDestinationPageHeroContent, getDestinationPageIntroContent, getSsgDestinationPageDestinations, getDestinationPageDestinationById } from '@/lib/firebase/firestore';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-static';
 
-async function getDestinationName(id: string) {
-    const destination = await getDestinationPageDestinationById(id);
-    return destination?.name || 'Destination Details';
+export const metadata: Metadata = {
+    title: 'Our Destinations',
+    description: 'Explore breathtaking destinations with Grand Walker Tours. From the cultural heart of Kandy to the pristine beaches of Galle, find your perfect Sri Lankan adventure.',
+};
+
+async function getDestinationData(destinationId?: string) {
+    if (!destinationId) {
+        return { name: null, detail: null };
+    }
+    const destination = await getDestinationPageDestinationById(destinationId);
+    return {
+        name: destination?.name || 'Destination Details',
+        detail: destination,
+    };
 }
 
 export default async function DestinationsPage({ searchParams }: { searchParams: { destinationId?: string } }) {
@@ -16,8 +28,7 @@ export default async function DestinationsPage({ searchParams }: { searchParams:
     const heroContent = await getDestinationPageHeroContent();
     const introContent = await getDestinationPageIntroContent();
     const destinations = await getSsgDestinationPageDestinations();
-    const destinationName = destinationId ? await getDestinationName(destinationId) : null;
-    const destinationDetail = destinationId ? await getDestinationPageDestinationById(destinationId) : null;
+    const { name: destinationName, detail: destinationDetail } = await getDestinationData(destinationId);
     
     return (
         <Suspense fallback={<div>Loading...</div>}>
