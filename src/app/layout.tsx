@@ -3,8 +3,6 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 import { siteConfig } from '@/config/site';
-import { getSlidesForPreload } from '@/lib/firebase/firestore';
-
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
@@ -42,9 +40,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const slides = await getSlidesForPreload();
-  const firstVideoUrl = slides.length > 0 && slides[0].videoUrl ? slides[0].videoUrl : null;
-
   return (
     <html lang="en" className="!scroll-smooth" suppressHydrationWarning>
       <head>
@@ -58,16 +53,6 @@ export default async function RootLayout({
         {/* Preload Header Logos */}
         <link rel="preload" as="image" href="/logo-dark.png" />
         <link rel="preload" as="image" href="/logo-light.png" />
-
-        {/**preload the hero slider images when site is loading */}
-        {slides.map((slide) => (
-          <link key={slide.id} rel="preload" as="image" href={slide.image} />
-        ))}
-        
-        {/**preload the hero slider video if it exists on the first slide */}
-        {firstVideoUrl && (
-          <link rel="preload" as="video" href={firstVideoUrl} type="video/mp4" />
-        )}
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         {children}

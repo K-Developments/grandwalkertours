@@ -99,7 +99,8 @@ const fetchFirestoreDoc = cache(async (path: string) => {
     checkEnvVariables();
     const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
     
-    const res = await fetch(url, { next: { revalidate: false } }); // No revalidation for static build
+    // Leverage Next.js's default caching behavior
+    const res = await fetch(url);
     
     if (!res.ok) {
         if (res.status === 404) {
@@ -114,11 +115,12 @@ const fetchFirestoreDoc = cache(async (path: string) => {
     return parseFirestoreResponse(json);
 });
 
-const fetchFirestoreCollection = cache(async (path: string, options?: { revalidate: number | false | undefined }) => {
+const fetchFirestoreCollection = cache(async (path: string) => {
     checkEnvVariables();
     const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
     
-    const res = await fetch(url, { next: { revalidate: options?.revalidate ?? false } });
+    // Leverage Next.js's default caching behavior
+    const res = await fetch(url); 
     
     if (!res.ok) {
         const errorText = await res.text();
@@ -618,3 +620,5 @@ export const getSsgTourPageTours = () => fetchFirestoreCollection(TOUR_PAGE_TOUR
 export const getTourPageTourById = (id: string) => fetchFirestoreDoc(`${TOUR_PAGE_TOURS_COLLECTION}/${id}`) as Promise<Tour | null>;
 export const getPrivacyPolicyContentSSG = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${PRIVACY_POLICY_DOC}`) as Promise<PrivacyPolicyContent | null>;
 export const getCookiePolicyContentSSG = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${COOKIE_POLICY_DOC}`) as Promise<CookiePolicyContent | null>;
+
+    

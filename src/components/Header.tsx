@@ -28,7 +28,6 @@ import {
 } from '@/components/ui/accordion';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { getTourPageTours, getDestinationPageDestinations } from '@/lib/firebase/firestore';
 import type { Tour, Destination } from '@/lib/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Image from 'next/image';
@@ -41,10 +40,13 @@ const topNavLinks = [
   { href: '/gallery', label: 'Gallery' },
 ];
 
-const Header = () => {
+type HeaderProps = {
+  tours: Tour[];
+  destinations: Destination[];
+}
+
+const Header = ({ tours, destinations }: HeaderProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [destinations, setDestinations] = useState<Destination[]>([]);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -52,14 +54,9 @@ const Header = () => {
       setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
-
-    const unsubscribeTours = getTourPageTours(setTours);
-    const unsubscribeDestinations = getDestinationPageDestinations(setDestinations);
-
+    
     return () => {
       window.removeEventListener('scroll', handleScroll);
-      unsubscribeTours();
-      unsubscribeDestinations();
     };
   }, []);
   
