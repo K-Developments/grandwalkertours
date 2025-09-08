@@ -45,9 +45,9 @@ export default async function AboutPage() {
       <MotionWrapper className="py-8 md:py-12">
         <MissionVisionSection content={missionVisionContent} titles={sectionTitles} />
       </MotionWrapper>
-      <WhyChooseUsSection items={whyChooseUsItems} titles={sectionTitles} />
+      <WhyChooseUsSection items={whyChooseUsItems || []} titles={sectionTitles} />
       <MotionWrapper>
-        <TestimonialsSection testimonials={testimonials} titles={sectionTitles} />
+        <TestimonialsSection testimonials={testimonials || []} titles={sectionTitles} />
       </MotionWrapper>
     </>
   );

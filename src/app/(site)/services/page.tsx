@@ -39,7 +39,7 @@ export default async function ServicesPage() {
           </nav>
       </div>
       <ServiceIntroSection content={introContent} />
-      <ServicesList services={services} />
+      <ServicesList services={services || []} />
     </>
   );
 }
