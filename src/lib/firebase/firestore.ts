@@ -99,8 +99,8 @@ const fetchFirestoreDoc = cache(async (path: string) => {
     checkEnvVariables();
     const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
     
-    // Leverage Next.js's default caching behavior
-    const res = await fetch(url);
+    // Explicitly set revalidate to false for pure SSG
+    const res = await fetch(url, { next: { revalidate: false } });
     
     if (!res.ok) {
         if (res.status === 404) {
@@ -119,8 +119,8 @@ const fetchFirestoreCollection = cache(async (path: string) => {
     checkEnvVariables();
     const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
     
-    // Leverage Next.js's default caching behavior
-    const res = await fetch(url); 
+    // Explicitly set revalidate to false for pure SSG
+    const res = await fetch(url, { next: { revalidate: false } }); 
     
     if (!res.ok) {
         const errorText = await res.text();
@@ -231,7 +231,7 @@ export function getServices(callback: (services: Service[]) => void) {
     });
 }
 
-export function getAboutHeroContentRealtime(callback: (content: AboutHeroContent | null) => void) {
+export function getAboutHeroContent(callback: (content: AboutHeroContent | null) => void) {
     return onSnapshot(doc(db, ABOUTPAGE_COLLECTION, ABOUT_HERO_DOC), (doc) => {
         callback(doc.exists() ? doc.data() as AboutHeroContent : null);
     });
@@ -589,7 +589,7 @@ export const getHomepageSectionTitlesSSG = () => fetchFirestoreDoc(`${HOMEPAGE_C
 export const getSsgDestinations = () => fetchFirestoreCollection(DESTINATIONS_COLLECTION) as Promise<Destination[]>;
 export const getSsgTours = () => fetchFirestoreCollection(TOURS_COLLECTION) as Promise<Tour[]>;
 export const getSsgServices = () => fetchFirestoreCollection(SERVICES_COLLECTION) as Promise<Service[]>;
-export const getAboutHeroContent = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_HERO_DOC}`) as Promise<AboutHeroContent | null>;
+export const getAboutHeroContentSSG = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_HERO_DOC}`) as Promise<AboutHeroContent | null>;
 export const getAboutSectionTitlesSSG = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_SECTION_TITLES_DOC}`) as Promise<AboutSectionTitles | null>;
 export const getMissionVisionContentSSG = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${MISSION_VISION_DOC}`) as Promise<MissionVisionContent | null>;
 export const getSsgWhyChooseUsItems = () => fetchFirestoreCollection(WHY_CHOOSE_US_COLLECTION) as Promise<WhyChooseUsItem[]>;
@@ -600,7 +600,7 @@ export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> 
     const post = posts.find(p => p.slug === slug);
     return post ? post : null;
 };
-export const getBlogPageHeroContent = () => fetchFirestoreDoc(`${BLOGPAGE_COLLECTION}/${BLOG_PAGE_HERO_DOC}`) as Promise<BlogPageHeroContent | null>;
+export const getBlogPageHeroContentSSG = () => fetchFirestoreDoc(`${BLOGPAGE_COLLECTION}/${BLOG_PAGE_HERO_DOC}`) as Promise<BlogPageHeroContent | null>;
 export const getFaqPageHeroContentSSG = () => fetchFirestoreDoc(`${FAQPAGE_COLLECTION}/${FAQ_PAGE_HERO_DOC}`) as Promise<FaqPageHeroContent | null>;
 export const getSsgFaqItems = () => fetchFirestoreCollection(FAQ_COLLECTION) as Promise<FAQItem[]>;
 export const getGalleryPageHeroContentSSG = () => fetchFirestoreDoc(`${GALLERYPAGE_COLLECTION}/${GALLERY_PAGE_HERO_DOC}`) as Promise<GalleryPageHeroContent | null>;
@@ -620,5 +620,7 @@ export const getSsgTourPageTours = () => fetchFirestoreCollection(TOUR_PAGE_TOUR
 export const getTourPageTourById = (id: string) => fetchFirestoreDoc(`${TOUR_PAGE_TOURS_COLLECTION}/${id}`) as Promise<Tour | null>;
 export const getPrivacyPolicyContentSSG = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${PRIVACY_POLICY_DOC}`) as Promise<PrivacyPolicyContent | null>;
 export const getCookiePolicyContentSSG = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${COOKIE_POLICY_DOC}`) as Promise<CookiePolicyContent | null>;
+
+    
 
     
