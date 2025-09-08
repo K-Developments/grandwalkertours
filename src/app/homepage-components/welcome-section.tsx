@@ -7,6 +7,7 @@ import { getWelcomeSectionContent } from '@/lib/firebase/firestore';
 import type { WelcomeSectionContent as WelcomeSectionContentType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 const isValidUrl = (url?: string): boolean => {
   if (!url) return false;
@@ -65,16 +66,20 @@ const WelcomePart = ({
             </div>
         </div>
 
-        {/* Image Column with CSS Parallax */}
+        {/* Image Column */}
         <div className={`w-full h-[70vh] md:h-auto relative ${imageOrderClass}`}>
             {showImage && image && (
-                <div 
-                  className="absolute inset-0 bg-cover bg-center bg-fixed"
-                  style={{ backgroundImage: `url(${image})` }}
-                  data-ai-hint={imageHint}
-                >
-                    <div className="absolute inset-4 border-2 border-white/80 pointer-events-none"></div>
-                </div>
+                <>
+                  <Image
+                      src={image}
+                      alt={headline || 'Welcome section image'}
+                      fill
+                      className="object-cover"
+                      data-ai-hint={imageHint}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                  />
+                  <div className="absolute inset-4 border-2 border-white/80 pointer-events-none"></div>
+                </>
             )}
         </div>
     </section>
