@@ -1,6 +1,6 @@
 // src/app/(site)/cookie-policy/page.tsx
 import type { Metadata } from 'next';
-import { getCookiePolicyContent } from '@/lib/firebase/firestore';
+import { getCookiePolicyContentSSG } from '@/lib/firebase/firestore';
 import Image from 'next/image';
 
 export const dynamic = 'force-static';
@@ -36,7 +36,7 @@ const LegalPageHero = ({ title, image, imageHint }: { title: string, image?: str
 };
 
 export default async function CookiePolicyPage() {
-  const content = await getCookiePolicyContent();
+  const content = await getCookiePolicyContentSSG();
   
   return (
     <>

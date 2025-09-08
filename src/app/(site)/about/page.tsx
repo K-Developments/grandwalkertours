@@ -6,7 +6,7 @@ import MissionVisionSection from '@/app/about/(components)/mission-vision';
 import WhyChooseUsSection from '@/app/about/(components)/why-choose-us';
 import TestimonialsSection from '@/app/about/(components)/testimonials';
 import Link from 'next/link';
-import { getAboutHeroContent, getMissionVisionContent, getAboutSectionTitles, getSsgWhyChooseUsItems, getSsgTestimonials } from '@/lib/firebase/firestore';
+import { getAboutHeroContentSSG, getMissionVisionContentSSG, getAboutSectionTitlesSSG, getSsgWhyChooseUsItems, getSsgTestimonials } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-static';
 
@@ -16,9 +16,9 @@ export const metadata: Metadata = {
 }
 
 export default async function AboutPage() {
-  const heroContent = await getAboutHeroContent();
-  const missionVisionContent = await getMissionVisionContent();
-  const sectionTitles = await getAboutSectionTitles();
+  const heroContent = await getAboutHeroContentSSG();
+  const missionVisionContent = await getMissionVisionContentSSG();
+  const sectionTitles = await getAboutSectionTitlesSSG();
   const whyChooseUsItems = await getSsgWhyChooseUsItems();
   const testimonials = await getSsgTestimonials();
 

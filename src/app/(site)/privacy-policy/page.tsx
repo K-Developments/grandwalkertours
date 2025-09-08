@@ -1,5 +1,5 @@
 // src/app/(site)/privacy-policy/page.tsx
-import { getPrivacyPolicyContent } from '@/lib/firebase/firestore';
+import { getPrivacyPolicyContentSSG } from '@/lib/firebase/firestore';
 import Image from 'next/image';
 import type { Metadata } from 'next';
 
@@ -36,7 +36,7 @@ const LegalPageHero = ({ title, image, imageHint }: { title: string, image?: str
 };
 
 export default async function PrivacyPolicyPage() {
-  const content = await getPrivacyPolicyContent();
+  const content = await getPrivacyPolicyContentSSG();
 
   return (
     <>
