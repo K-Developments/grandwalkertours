@@ -18,7 +18,7 @@ type DestinationsListProps = {
 const DestinationsList = ({ destinations, intro, onDestinationSelect }: DestinationsListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredDestinations = destinations.filter(destination => 
+  const filteredDestinations = (destinations || []).filter(destination => 
     destination.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     destination.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -46,16 +46,16 @@ const DestinationsList = ({ destinations, intro, onDestinationSelect }: Destinat
         </div>
 
 
-        {destinations.length === 0 ? (
-          <div className="text-center">
-            <h2 className="text-2xl font-light">No Destinations Available</h2>
-            <p className="text-muted-foreground">Please check back later for our amazing destinations.</p>
+        {!filteredDestinations || filteredDestinations.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-light">{searchQuery ? 'No Destinations Found' : 'No Destinations Available'}</h3>
+            <p className="text-muted-foreground">
+                {searchQuery 
+                    ? `Your search for "${searchQuery}" did not return any results.`
+                    : 'Please check back later for our amazing destinations.'
+                }
+            </p>
           </div>
-        ) : filteredDestinations.length === 0 ? (
-             <div className="text-center py-12">
-                <h3 className="text-xl font-light">No Destinations Found</h3>
-                <p className="text-muted-foreground">Your search for "{searchQuery}" did not return any results.</p>
-            </div>
         ) : (
           <div className="flex flex-wrap justify-center gap-8">
             {filteredDestinations.map((destination) => (

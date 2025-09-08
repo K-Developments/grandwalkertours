@@ -20,7 +20,7 @@ type ToursListProps = {
 const ToursList = ({ tours, intro, onTourSelect }: ToursListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredTours = tours.filter(tour =>
+  const filteredTours = (tours || []).filter(tour =>
     tour.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     tour.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -46,16 +46,16 @@ const ToursList = ({ tours, intro, onTourSelect }: ToursListProps) => {
         </div>
 
 
-        {tours.length === 0 ? (
-          <div className="text-center">
-            <h2 className="text-2xl font-light">No Tours Available</h2>
-            <p className="text-muted-foreground">Please check back later for our exciting tour packages.</p>
+        {!filteredTours || filteredTours.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-xl font-light">{searchQuery ? 'No Tours Found' : 'No Tours Available'}</h3>
+            <p className="text-muted-foreground">
+                {searchQuery 
+                    ? `Your search for "${searchQuery}" did not return any results.`
+                    : 'Please check back later for our exciting tour packages.'
+                }
+            </p>
           </div>
-        ) : filteredTours.length === 0 ? (
-            <div className="text-center py-12">
-                <h3 className="text-xl font-light">No Tours Found</h3>
-                <p className="text-muted-foreground">Your search for "{searchQuery}" did not return any results.</p>
-            </div>
         ) : (
           <div className="space-y-24">
             {filteredTours.map((tour, index) => (

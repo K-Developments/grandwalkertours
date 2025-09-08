@@ -21,7 +21,7 @@ export default async function ToursPage({ searchParams }: { searchParams: { tour
 
     const heroContent = await getTourPageHeroContent();
     const introContent = await getTourPageIntroContent();
-    const tours = await getSsgTourPageTours();
+    const tours = await getSsgTourPageTours() || [];
     const tourName = tourId ? await getTourName(tourId) : null;
     const tourDetail = tourId ? await getTourPageTourById(tourId) : null;
     

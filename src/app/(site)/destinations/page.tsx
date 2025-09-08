@@ -27,7 +27,7 @@ export default async function DestinationsPage({ searchParams }: { searchParams:
 
     const heroContent = await getDestinationPageHeroContent();
     const introContent = await getDestinationPageIntroContent();
-    const destinations = await getSsgDestinationPageDestinations();
+    const destinations = await getSsgDestinationPageDestinations() || [];
     const { name: destinationName, detail: destinationDetail } = await getDestinationData(destinationId);
     
     return (
