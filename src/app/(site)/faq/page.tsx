@@ -15,7 +15,7 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
     title: 'Frequently Asked Questions',
-    description: 'Find answers to common questions about our tours, booking process, and travel policies. Grand Walker Tours is here to help you plan your perfect journey.',
+    description: 'Find answers to common questions about our Sri Lanka tours, booking process, and travel policies. Grand Walker Tours is here to help you plan your perfect journey.',
 };
 
 export default async function FAQPage() {

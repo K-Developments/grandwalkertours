@@ -10,7 +10,7 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
-  description: 'Get in touch with Grand Walker Tours. We are here to answer your questions and help you plan your next unforgettable journey. Reach out to us via phone, email, or our contact form.',
+  description: 'Get in touch with Grand Walker Tours. We are here to answer your questions and help you plan your next unforgettable journey to Sri Lanka. Reach out via phone, email, or our contact form.',
 }
 
 export default async function ContactPage() {

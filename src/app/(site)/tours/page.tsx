@@ -8,7 +8,7 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
     title: 'Our Tours',
-    description: 'Browse our collection of expertly curated tours. From cultural heritage explorations to thrilling adventures, Grand Walker Tours offers a journey for every traveler.',
+    description: 'Browse our collection of expertly curated Sri Lanka tours. From cultural heritage explorations to thrilling adventures, Grand Walker Tours offers a journey for every traveler.',
 };
 
 export default async function ToursPage() {

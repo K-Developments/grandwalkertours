@@ -7,7 +7,7 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
     title: 'Gallery',
-    description: 'A visual journey through the stunning locations and unforgettable moments captured on our tours. Explore the Grand Walker Tours gallery.',
+    description: 'A visual journey through the stunning locations and unforgettable moments captured on our Sri Lanka tours. Explore the Grand Walker Tours gallery.',
 };
 
 export default async function GalleryPage() {

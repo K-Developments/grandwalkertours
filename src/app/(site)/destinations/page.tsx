@@ -8,7 +8,7 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
     title: 'Our Destinations',
-    description: 'Explore breathtaking destinations with Grand Walker Tours. From the cultural heart of Kandy to the pristine beaches of Galle, find your perfect Sri Lankan adventure.',
+    description: 'Explore breathtaking destinations in Sri Lanka with Grand Walker Tours. From the cultural heart of Kandy to the pristine beaches of Galle, find your perfect Sri Lankan adventure.',
 };
 
 export default async function DestinationsPage() {

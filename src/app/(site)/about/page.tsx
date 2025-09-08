@@ -12,7 +12,7 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'About Us',
-  description: 'Learn about Grand Walker Tours, our mission, our vision, and the team dedicated to creating your dream journeys. Discover our passion for travel and commitment to excellence.',
+  description: 'Learn about Grand Walker Tours, our mission, our vision, and the team dedicated to creating your dream journeys in Sri Lanka. Discover our passion for travel and commitment to excellence.',
 }
 
 export default async function AboutPage() {

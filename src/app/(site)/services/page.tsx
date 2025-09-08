@@ -11,7 +11,7 @@ export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Our Services',
-  description: 'Explore the wide range of bespoke services offered by Grand Walker Tours. From personalized tour planning to luxury accommodations, we cater to every aspect of your journey.',
+  description: 'Explore the wide range of bespoke services offered by Grand Walker Tours for your Sri Lanka trip. From personalized tour planning to luxury accommodations, we cater to every aspect of your journey.',
 }
 
 export default async function ServicesPage() {
