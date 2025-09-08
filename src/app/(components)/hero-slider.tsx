@@ -1,14 +1,13 @@
 // src/app/(components)/hero-slider.tsx
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
 import { getSlides } from '@/lib/firebase/firestore';
 import type { HeroSlide } from '@/lib/types';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -18,6 +17,15 @@ const containerVariants = {
       staggerChildren: 0.2, 
       delayChildren: 0.1,
     },
+  },
+};
+
+const textSlideUp = {
+  hidden: { y: "100%", opacity: 0 },
+  visible: { 
+    y: 0,
+    opacity: 1,
+    transition: { duration: 0.7, ease: [0.6, 0.01, 0.05, 0.95] } 
   },
 };
 
@@ -90,10 +98,6 @@ export default function HeroSlider() {
     };
   }, [api]);
 
-  const scrollTo = useCallback((index: number) => {
-    api?.scrollTo(index)
-  }, [api]);
-
   useEffect(() => {
     if (!showVideo && api && autoplayRef.current) {
       try {
@@ -144,133 +148,131 @@ export default function HeroSlider() {
   const currentSlide = slides[current];
 
   return (
-    <>
-      <section 
-        id="home" 
-        className="relative h-[50vh] md:h-screen w-full overflow-hidden"
-      >
-        {showVideo && introVideoUrl ? (
-          <video
-            src={introVideoUrl}
-            autoPlay
-            muted
-            playsInline
-            onEnded={handleVideoEnd}
-            onError={handleVideoError}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <>
-            <Carousel 
-                setApi={setApi}
-                className="w-full h-full"
-                plugins={autoplayRef.current ? [autoplayRef.current] : []}
-                opts={{ align: "start", loop: true }}
-            >
-                <CarouselContent>
-                    {slides.map((slide) => (
-                      <CarouselItem key={slide.id}></CarouselItem>
-                    ))}
-                </CarouselContent>
-            </Carousel>
+    <section 
+      id="home" 
+      className="relative h-[50vh] md:h-screen w-full overflow-hidden"
+    >
+      {showVideo && introVideoUrl ? (
+        <video
+          src={introVideoUrl}
+          autoPlay
+          muted
+          playsInline
+          onEnded={handleVideoEnd}
+          onError={handleVideoError}
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <>
+          <Carousel 
+              setApi={setApi}
+              className="w-full h-full"
+              plugins={autoplayRef.current ? [autoplayRef.current] : []}
+              opts={{ align: "start", loop: true }}
+          >
+              <CarouselContent>
+                  {slides.map((slide) => (
+                    <CarouselItem key={slide.id}></CarouselItem>
+                  ))}
+              </CarouselContent>
+          </Carousel>
 
-            {/* Background Images & Content */}
-            <AnimatePresence>
-              {currentSlide && (
-                  <motion.div
-                      key={current}
-                      variants={imageVariants}
-                      initial="initial"
-                      animate="animate"
-                      exit="exit"
-                      className="absolute inset-0 z-0"
-                  >
-                      <Image
-                          src={currentSlide.image}
-                          alt={currentSlide.headline}
-                          fill
-                          className="w-full h-full object-cover"
-                          priority
-                          data-ai-hint={currentSlide.imageHint}
-                          sizes="100vw"
-                          quality={95}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10" />
-                  </motion.div>
-              )}
-            </AnimatePresence>
-          </>
-        )}
-
-        {/* Bottom Content Container */}
-        <div className="absolute bottom-0 left-0 right-0 z-20">
-          <div className="md:flex justify-end hidden px-4 py-4 md:py-8">
-            {/* Content Div - 60% width */}
-            <div className="w-full md:max-w-[60%]">
-              <AnimatePresence mode="wait">
-                <motion.div 
-                  key={current}
-                  initial="hidden"
-                  animate="visible"
-                  exit="hidden"
-                  variants={containerVariants}
-                  className="grid grid-cols-1 items-center text-white"
+          {/* Background Images & Content */}
+          <AnimatePresence>
+            {currentSlide && (
+                <motion.div
+                    key={current}
+                    variants={imageVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="absolute inset-0 z-0"
                 >
-                  {/* Right Side - Title */}
-                  <div className="overflow-hidden text-right">
-                    <motion.h1 
-                      className="font-headline font-light hero-headline-right tracking-tight"
-                      variants={slideFromRight}
-                    >
-                      {currentSlide?.headline}
-                    </motion.h1>
-                  </div>
+                    <Image
+                        src={currentSlide.image}
+                        alt={currentSlide.headline}
+                        fill
+                        className="w-full h-full object-cover"
+                        priority
+                        data-ai-hint={currentSlide.imageHint}
+                        sizes="100vw"
+                        quality={95}
+                    />
+                    <div className="absolute inset-0  z-10" />
                 </motion.div>
-              </AnimatePresence>
-            </div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
+
+      {/* Bottom Content Container */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-transparent">
+        <div className="flex justify-center px-4 py-4 md:py-8">
+          {/* Content Div - 60% width */}
+          <div className="w-full md:max-w-[60%]">
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={current}
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                variants={containerVariants}
+                className="grid md:grid-cols-2  grid-col-1 items-center  text-white "
+              >
+                {/* Left Side - Quote */}
+                <div className="overflow-hidden border-r-2 border-white text-white hidden md:block">
+                  <motion.div 
+                    className="text-right mr-5 md:display-block display-none"
+                    variants={slideFromLeft}
+                  >
+                    <p className="text-sm md:text-base lg:text-lg font-light italic text-white ">
+                      "Discover the extraordinary"
+                    </p>
+                    <p className="text-xs md:text-sm opacity-70 mt-1">
+                      - Grand Walker Tours
+                    </p>
+                  </motion.div>
+                </div>
+
+              
+
+                {/* Right Side - Title */}
+                <div className="overflow-hidden">
+                  <motion.h1 
+                    className="font-headline font-light text-3xl md:text-3xl lg:text-5xl tracking-tight text-left ml-5"
+                    variants={slideFromRight}
+                  >
+                    {currentSlide?.headline}
+                  </motion.h1>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
         </div>
-
-        {/* Scroll Down Indicator */}
-        {!showVideo && (
-          <a 
-            href="#welcome" 
-            aria-label="Scroll to next section" 
-            className="absolute bottom-4 md:bottom-8 right-8 z-20 opacity-70 hover:opacity-100 transition-opacity"
-          >
-            <div className="w-8 h-16 text-white">
-              <svg width="100%" height="100%" viewBox="0 0 24 64">
-                <motion.path
-                  d="M 12 0 V 60 L 18 54 M 12 60 L 6 54"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  fill="none"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 1 }}
-                  transition={{ duration: 1.5, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut' }}
-                />
-              </svg>
-            </div>
-          </a>
-        )}
-      </section>
-      
-      {/* Mobile Pagination */}
-       <div className="md:hidden bg-[#FAFAFA] py-4">
-        <div className="container mx-auto px-4 flex justify-center items-center gap-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => scrollTo(index)}
-              className={cn(
-                "h-2 w-6 rounded-full transition-all duration-300",
-                index === current ? "bg-primary w-8" : "bg-muted"
-              )}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
       </div>
-    </>
+
+      {/* Scroll Down Indicator */}
+      {!showVideo && (
+        <a 
+          href="#welcome" 
+          aria-label="Scroll to next section" 
+          className="absolute bottom-4 md:bottom-8 right-8 z-20 opacity-70 hover:opacity-100 transition-opacity"
+        >
+          <div className="w-8 h-16 text-white">
+            <svg width="100%" height="100%" viewBox="0 0 24 64">
+              <motion.path
+                d="M 12 0 V 60 L 18 54 M 12 60 L 6 54"
+                stroke="currentColor"
+                strokeWidth="2"
+                fill="none"
+                initial={{ pathLength: 0, opacity: 0 }}
+                animate={{ pathLength: 1, opacity: 1 }}
+                transition={{ duration: 1.5, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut' }}
+              />
+            </svg>
+          </div>
+        </a>
+      )}
+    </section>
   );
 }
