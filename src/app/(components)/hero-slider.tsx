@@ -213,25 +213,6 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
         </div>
       </div>
       
-       {/* Mobile Pagination */}
-      <div className="absolute bottom-0 left-0 right-0 md:hidden bg-[#FAFAFA] p-4">
-        <div className="flex justify-center items-center gap-3">
-            {slides.map((_, index) => (
-                <Button
-                    key={index}
-                    size="icon"
-                    variant="ghost"
-                    className={cn(
-                        "h-2 w-2 rounded-full p-0",
-                        current === index ? "bg-primary" : "bg-primary/20"
-                    )}
-                    onClick={() => api?.scrollTo(index)}
-                    aria-label={`Go to slide ${index + 1}`}
-                />
-            ))}
-        </div>
-       </div>
-
       {/* Scroll Down Indicator */}
       {!showVideo && (
         <a 
