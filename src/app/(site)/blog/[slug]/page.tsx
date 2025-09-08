@@ -1,5 +1,5 @@
 // src/app/(site)/blog/[slug]/page.tsx
-import { getBlogPostBySlug, getBlogPosts } from '@/lib/firebase/firestore';
+import { getBlogPostBySlug, getSsgBlogPosts } from '@/lib/firebase/firestore';
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export async function generateStaticParams() {
-  const posts = await getBlogPosts();
+  const posts = await getSsgBlogPosts();
  
   return posts.map((post) => ({
     slug: post.slug,
@@ -94,8 +94,8 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
               <span>{post.authorName}</span>
             </div>
             <span>&bull;</span>
-            <time dateTime={post.publishedAt.toDate().toISOString()}>
-              {format(post.publishedAt.toDate(), 'PPP')}
+            <time dateTime={post.publishedAt.toDateString()}>
+              {format(post.publishedAt, 'PPP')}
             </time>
           </div>
         </header>

@@ -69,7 +69,7 @@ export default function EditBlogPostPage() {
           form.reset({
             ...postData,
             // Convert timestamp back to yyyy-MM-dd string for the date input
-            publishedAt: postData.publishedAt ? format(postData.publishedAt.toDate(), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+            publishedAt: postData.publishedAt ? format(new Date(postData.publishedAt as any), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
           });
         } else {
            toast({ title: 'Error', description: 'Blog post not found.', variant: 'destructive' });

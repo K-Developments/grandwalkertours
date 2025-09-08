@@ -113,7 +113,7 @@ export default function BlogPostsListPage() {
                   <div className="flex-1 overflow-hidden">
                     <p className="font-semibold truncate">{post.title}</p>
                     <p className="text-sm text-muted-foreground">
-                        Published on {format(post.publishedAt.toDate(), 'PPP')}
+                        Published on {format(new Date(post.publishedAt as any), 'PPP')}
                     </p>
                   </div>
                   <div className="flex gap-2">
