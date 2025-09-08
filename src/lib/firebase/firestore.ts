@@ -171,6 +171,161 @@ const FAQ_COLLECTION = 'faq';
 const COOKIE_POLICY_DOC = 'cookiePolicy';
 const PRIVACY_POLICY_DOC = 'privacyPolicy';
 
+// --- Realtime Listeners for Admin Panel ---
+
+export function getSlides(callback: (slides: HeroSlide[]) => void) {
+  const q = query(collection(db, SLIDES_COLLECTION));
+  return onSnapshot(q, (snapshot) => {
+    const slides: HeroSlide[] = [];
+    snapshot.forEach((doc) => {
+      slides.push({ id: doc.id, ...doc.data() } as HeroSlide);
+    });
+    callback(slides);
+  });
+}
+
+export function getWelcomeSectionContent(callback: (content: WelcomeSectionContent | null) => void) {
+    return onSnapshot(doc(db, HOMEPAGE_COLLECTION, WELCOME_SECTION_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as WelcomeSectionContent : null);
+    });
+}
+
+export function getHomepageSectionTitles(callback: (content: HomepageSectionTitles | null) => void) {
+    return onSnapshot(doc(db, HOMEPAGE_COLLECTION, HOMEPAGE_SECTION_TITLES_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as HomepageSectionTitles : null);
+    });
+}
+
+export function getDestinations(callback: (destinations: Destination[]) => void) {
+    const q = query(collection(db, DESTINATIONS_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+        const destinations: Destination[] = [];
+        snapshot.forEach((doc) => {
+            destinations.push({ id: doc.id, ...doc.data() } as Destination);
+        });
+        callback(destinations);
+    });
+}
+
+export function getTours(callback: (tours: Tour[]) => void) {
+    const q = query(collection(db, TOURS_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+        const tours: Tour[] = [];
+        snapshot.forEach((doc) => {
+            tours.push({ id: doc.id, ...doc.data() } as Tour);
+        });
+        callback(tours);
+    });
+}
+
+export function getServices(callback: (services: Service[]) => void) {
+    const q = query(collection(db, SERVICES_COLLECTION));
+    return onSnapshot(q, (snapshot) => {
+        const services: Service[] = [];
+        snapshot.forEach((doc) => {
+            services.push({ id: doc.id, ...doc.data() } as Service);
+        });
+        callback(services);
+    });
+}
+
+export function getAboutHeroContentRealtime(callback: (content: AboutHeroContent | null) => void) {
+    return onSnapshot(doc(db, ABOUTPAGE_COLLECTION, ABOUT_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as AboutHeroContent : null);
+    });
+}
+
+export function getAboutSectionTitles(callback: (content: AboutSectionTitles | null) => void) {
+    return onSnapshot(doc(db, ABOUTPAGE_COLLECTION, ABOUT_SECTION_TITLES_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as AboutSectionTitles : null);
+    });
+}
+
+export function getMissionVisionContent(callback: (content: MissionVisionContent | null) => void) {
+    return onSnapshot(doc(db, ABOUTPAGE_COLLECTION, MISSION_VISION_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as MissionVisionContent : null);
+    });
+}
+
+export function getBlogPageHeroContentRealtime(callback: (content: BlogPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as BlogPageHeroContent : null);
+    });
+}
+
+export function getContactPageHeroContent(callback: (content: ContactPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, CONTACTPAGE_COLLECTION, CONTACT_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ContactPageHeroContent : null);
+    });
+}
+
+export function getContactPageDetailsContent(callback: (content: ContactPageDetailsContent | null) => void) {
+    return onSnapshot(doc(db, CONTACTPAGE_COLLECTION, CONTACT_DETAILS_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ContactPageDetailsContent : null);
+    });
+}
+
+export function getDestinationPageHeroContent(callback: (content: DestinationPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as DestinationPageHeroContent : null);
+    });
+}
+
+export function getDestinationPageIntroContent(callback: (content: DestinationPageIntroContent | null) => void) {
+    return onSnapshot(doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_INTRO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as DestinationPageIntroContent : null);
+    });
+}
+
+export function getFaqPageHeroContent(callback: (content: FaqPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, FAQPAGE_COLLECTION, FAQ_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as FaqPageHeroContent : null);
+    });
+}
+
+export function getGalleryPageHeroContent(callback: (content: GalleryPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, GALLERYPAGE_COLLECTION, GALLERY_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as GalleryPageHeroContent : null);
+    });
+}
+
+export function getCookiePolicyContent(callback: (content: CookiePolicyContent | null) => void) {
+    return onSnapshot(doc(db, LEGALPAGE_COLLECTION, COOKIE_POLICY_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as CookiePolicyContent : null);
+    });
+}
+
+export function getPrivacyPolicyContent(callback: (content: PrivacyPolicyContent | null) => void) {
+    return onSnapshot(doc(db, LEGALPAGE_COLLECTION, PRIVACY_POLICY_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as PrivacyPolicyContent : null);
+    });
+}
+
+export function getServicePageHeroContent(callback: (content: ServicePageHeroContent | null) => void) {
+    return onSnapshot(doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ServicePageHeroContent : null);
+    });
+}
+
+export function getServicePageIntroContent(callback: (content: ServicePageIntroContent | null) => void) {
+    return onSnapshot(doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_INTRO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as ServicePageIntroContent : null);
+    });
+}
+
+export function getTourPageHeroContent(callback: (content: TourPageHeroContent | null) => void) {
+    return onSnapshot(doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_HERO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as TourPageHeroContent : null);
+    });
+}
+
+export function getTourPageIntroContent(callback: (content: TourPageIntroContent | null) => void) {
+    return onSnapshot(doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_INTRO_DOC), (doc) => {
+        callback(doc.exists() ? doc.data() as TourPageIntroContent : null);
+    });
+}
+
+
 // --- CMS Write Operations (Still use the SDK) ---
 
 export async function addSlide(slide: Omit<HeroSlide, 'id'>) {
@@ -258,11 +413,18 @@ export async function updateTestimonial(id: string, testimonial: Partial<Testimo
 export async function deleteTestimonial(id: string) {
   return await deleteDoc(doc(db, TESTIMONIALS_COLLECTION, id));
 }
-export async function getBlogPostsWithUpdates(callback: (posts: BlogPost[]) => void) {
+export function getBlogPosts(callback: (posts: BlogPost[]) => void) {
     const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('publishedAt', 'desc'));
-    return onSnapshot(q, (querySnapshot) => {
+    return onSnapshot(q, (snapshot) => {
         const posts: BlogPost[] = [];
-        querySnapshot.forEach((doc) => posts.push({ id: doc.id, ...doc.data() } as BlogPost));
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            posts.push({ 
+                id: doc.id, 
+                ...data,
+                publishedAt: (data.publishedAt as Timestamp)
+            } as BlogPost);
+        });
         callback(posts);
     });
 }
@@ -398,61 +560,6 @@ export async function updateTourPageIntroContent(content: TourPageIntroContent) 
 export async function updateBlogPageHeroContent(content: BlogPageHeroContent) {
     return await setDoc(doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC), content, { merge: true });
 }
-export function getSlides(callback: (slides: HeroSlide[]) => void) {
-  const q = query(collection(db, SLIDES_COLLECTION));
-  return onSnapshot(q, (snapshot) => {
-    const slides: HeroSlide[] = [];
-    snapshot.forEach((doc) => {
-      slides.push({ id: doc.id, ...doc.data() } as HeroSlide);
-    });
-    callback(slides);
-  });
-}
-export function getDestinations(callback: (destinations: Destination[]) => void) {
-    const q = query(collection(db, DESTINATIONS_COLLECTION));
-    return onSnapshot(q, (snapshot) => {
-        const destinations: Destination[] = [];
-        snapshot.forEach((doc) => {
-            destinations.push({ id: doc.id, ...doc.data() } as Destination);
-        });
-        callback(destinations);
-    });
-}
-export function getTours(callback: (tours: Tour[]) => void) {
-    const q = query(collection(db, TOURS_COLLECTION));
-    return onSnapshot(q, (snapshot) => {
-        const tours: Tour[] = [];
-        snapshot.forEach((doc) => {
-            tours.push({ id: doc.id, ...doc.data() } as Tour);
-        });
-        callback(tours);
-    });
-}
-export function getServices(callback: (services: Service[]) => void) {
-    const q = query(collection(db, SERVICES_COLLECTION));
-    return onSnapshot(q, (snapshot) => {
-        const services: Service[] = [];
-        snapshot.forEach((doc) => {
-            services.push({ id: doc.id, ...doc.data() } as Service);
-        });
-        callback(services);
-    });
-}
-export function getBlogPosts(callback: (posts: BlogPost[]) => void) {
-    const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('publishedAt', 'desc'));
-    return onSnapshot(q, (snapshot) => {
-        const posts: BlogPost[] = [];
-        snapshot.forEach((doc) => {
-            const data = doc.data();
-            posts.push({ 
-                id: doc.id, 
-                ...data,
-                publishedAt: (data.publishedAt as Timestamp)
-            } as BlogPost);
-        });
-        callback(posts);
-    });
-}
 export function getServicePageServices(callback: (services: Service[]) => void) {
     const q = query(collection(db, SERVICE_PAGE_SERVICES_COLLECTION));
     return onSnapshot(q, (snapshot) => {
@@ -475,14 +582,14 @@ export async function deleteServicePageService(id: string) {
 
 // --- SSG Read Functions ---
 export const getSlidesForPreload = () => fetchFirestoreCollection(SLIDES_COLLECTION) as Promise<HeroSlide[]>;
-export const getWelcomeSectionContent = () => fetchFirestoreDoc(`${HOMEPAGE_COLLECTION}/${WELCOME_SECTION_DOC}`) as Promise<WelcomeSectionContent | null>;
-export const getHomepageSectionTitles = () => fetchFirestoreDoc(`${HOMEPAGE_COLLECTION}/${HOMEPAGE_SECTION_TITLES_DOC}`) as Promise<HomepageSectionTitles | null>;
+export const getWelcomeSectionContentSSG = () => fetchFirestoreDoc(`${HOMEPAGE_COLLECTION}/${WELCOME_SECTION_DOC}`) as Promise<WelcomeSectionContent | null>;
+export const getHomepageSectionTitlesSSG = () => fetchFirestoreDoc(`${HOMEPAGE_COLLECTION}/${HOMEPAGE_SECTION_TITLES_DOC}`) as Promise<HomepageSectionTitles | null>;
 export const getSsgDestinations = () => fetchFirestoreCollection(DESTINATIONS_COLLECTION) as Promise<Destination[]>;
 export const getSsgTours = () => fetchFirestoreCollection(TOURS_COLLECTION) as Promise<Tour[]>;
 export const getSsgServices = () => fetchFirestoreCollection(SERVICES_COLLECTION) as Promise<Service[]>;
 export const getAboutHeroContent = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_HERO_DOC}`) as Promise<AboutHeroContent | null>;
-export const getAboutSectionTitles = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_SECTION_TITLES_DOC}`) as Promise<AboutSectionTitles | null>;
-export const getMissionVisionContent = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${MISSION_VISION_DOC}`) as Promise<MissionVisionContent | null>;
+export const getAboutSectionTitlesSSG = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_SECTION_TITLES_DOC}`) as Promise<AboutSectionTitles | null>;
+export const getMissionVisionContentSSG = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${MISSION_VISION_DOC}`) as Promise<MissionVisionContent | null>;
 export const getSsgWhyChooseUsItems = () => fetchFirestoreCollection(WHY_CHOOSE_US_COLLECTION) as Promise<WhyChooseUsItem[]>;
 export const getSsgTestimonials = () => fetchFirestoreCollection(TESTIMONIALS_COLLECTION) as Promise<Testimonial[]>;
 export const getSsgBlogPosts = () => fetchFirestoreCollection(BLOG_POSTS_COLLECTION) as Promise<BlogPost[]>;
@@ -491,22 +598,23 @@ export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> 
     const post = posts.find(p => p.slug === slug);
     return post ? post : null;
 };
-export const getFaqPageHeroContent = () => fetchFirestoreDoc(`${FAQPAGE_COLLECTION}/${FAQ_PAGE_HERO_DOC}`) as Promise<FaqPageHeroContent | null>;
+export const getBlogPageHeroContent = () => fetchFirestoreDoc(`${BLOGPAGE_COLLECTION}/${BLOG_PAGE_HERO_DOC}`) as Promise<BlogPageHeroContent | null>;
+export const getFaqPageHeroContentSSG = () => fetchFirestoreDoc(`${FAQPAGE_COLLECTION}/${FAQ_PAGE_HERO_DOC}`) as Promise<FaqPageHeroContent | null>;
 export const getSsgFaqItems = () => fetchFirestoreCollection(FAQ_COLLECTION) as Promise<FAQItem[]>;
-export const getGalleryPageHeroContent = () => fetchFirestoreDoc(`${GALLERYPAGE_COLLECTION}/${GALLERY_PAGE_HERO_DOC}`) as Promise<GalleryPageHeroContent | null>;
+export const getGalleryPageHeroContentSSG = () => fetchFirestoreDoc(`${GALLERYPAGE_COLLECTION}/${GALLERY_PAGE_HERO_DOC}`) as Promise<GalleryPageHeroContent | null>;
 export const getSsgGalleryItems = () => fetchFirestoreCollection(GALLERY_COLLECTION) as Promise<GalleryItem[]>;
-export const getContactPageHeroContent = () => fetchFirestoreDoc(`${CONTACTPAGE_COLLECTION}/${CONTACT_PAGE_HERO_DOC}`) as Promise<ContactPageHeroContent | null>;
-export const getContactPageDetailsContent = () => fetchFirestoreDoc(`${CONTACTPAGE_COLLECTION}/${CONTACT_DETAILS_DOC}`) as Promise<ContactPageDetailsContent | null>;
-export const getServicePageHeroContent = () => fetchFirestoreDoc(`${SERVICEPAGE_COLLECTION}/${SERVICE_PAGE_HERO_DOC}`) as Promise<ServicePageHeroContent | null>;
-export const getServicePageIntroContent = () => fetchFirestoreDoc(`${SERVICEPAGE_COLLECTION}/${SERVICE_PAGE_INTRO_DOC}`) as Promise<ServicePageIntroContent | null>;
+export const getContactPageHeroContentSSG = () => fetchFirestoreDoc(`${CONTACTPAGE_COLLECTION}/${CONTACT_PAGE_HERO_DOC}`) as Promise<ContactPageHeroContent | null>;
+export const getContactPageDetailsContentSSG = () => fetchFirestoreDoc(`${CONTACTPAGE_COLLECTION}/${CONTACT_DETAILS_DOC}`) as Promise<ContactPageDetailsContent | null>;
+export const getServicePageHeroContentSSG = () => fetchFirestoreDoc(`${SERVICEPAGE_COLLECTION}/${SERVICE_PAGE_HERO_DOC}`) as Promise<ServicePageHeroContent | null>;
+export const getServicePageIntroContentSSG = () => fetchFirestoreDoc(`${SERVICEPAGE_COLLECTION}/${SERVICE_PAGE_INTRO_DOC}`) as Promise<ServicePageIntroContent | null>;
 export const getSsgServicePageServices = () => fetchFirestoreCollection(SERVICE_PAGE_SERVICES_COLLECTION) as Promise<Service[]>;
-export const getDestinationPageHeroContent = () => fetchFirestoreDoc(`${DESTINATIONPAGE_COLLECTION}/${DESTINATION_PAGE_HERO_DOC}`) as Promise<DestinationPageHeroContent | null>;
-export const getDestinationPageIntroContent = () => fetchFirestoreDoc(`${DESTINATIONPAGE_COLLECTION}/${DESTINATION_PAGE_INTRO_DOC}`) as Promise<DestinationPageIntroContent | null>;
+export const getDestinationPageHeroContentSSG = () => fetchFirestoreDoc(`${DESTINATIONPAGE_COLLECTION}/${DESTINATION_PAGE_HERO_DOC}`) as Promise<DestinationPageHeroContent | null>;
+export const getDestinationPageIntroContentSSG = () => fetchFirestoreDoc(`${DESTINATIONPAGE_COLLECTION}/${DESTINATION_PAGE_INTRO_DOC}`) as Promise<DestinationPageIntroContent | null>;
 export const getSsgDestinationPageDestinations = () => fetchFirestoreCollection(DESTINATION_PAGE_DESTINATIONS_COLLECTION) as Promise<Destination[]>;
 export const getDestinationPageDestinationById = (id: string) => fetchFirestoreDoc(`${DESTINATION_PAGE_DESTINATIONS_COLLECTION}/${id}`) as Promise<Destination | null>;
-export const getTourPageHeroContent = () => fetchFirestoreDoc(`${TOURPAGE_COLLECTION}/${TOUR_PAGE_HERO_DOC}`) as Promise<TourPageHeroContent | null>;
-export const getTourPageIntroContent = () => fetchFirestoreDoc(`${TOURPAGE_COLLECTION}/${TOUR_PAGE_INTRO_DOC}`) as Promise<TourPageIntroContent | null>;
+export const getTourPageHeroContentSSG = () => fetchFirestoreDoc(`${TOURPAGE_COLLECTION}/${TOUR_PAGE_HERO_DOC}`) as Promise<TourPageHeroContent | null>;
+export const getTourPageIntroContentSSG = () => fetchFirestoreDoc(`${TOURPAGE_COLLECTION}/${TOUR_PAGE_INTRO_DOC}`) as Promise<TourPageIntroContent | null>;
 export const getSsgTourPageTours = () => fetchFirestoreCollection(TOUR_PAGE_TOURS_COLLECTION) as Promise<Tour[]>;
 export const getTourPageTourById = (id: string) => fetchFirestoreDoc(`${TOUR_PAGE_TOURS_COLLECTION}/${id}`) as Promise<Tour | null>;
-export const getPrivacyPolicyContent = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${PRIVACY_POLICY_DOC}`) as Promise<PrivacyPolicyContent | null>;
-export const getCookiePolicyContent = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${COOKIE_POLICY_DOC}`) as Promise<CookiePolicyContent | null>;
+export const getPrivacyPolicyContentSSG = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${PRIVACY_POLICY_DOC}`) as Promise<PrivacyPolicyContent | null>;
+export const getCookiePolicyContentSSG = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${COOKIE_POLICY_DOC}`) as Promise<CookiePolicyContent | null>;

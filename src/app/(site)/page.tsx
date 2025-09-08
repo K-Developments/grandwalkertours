@@ -6,7 +6,7 @@ import WelcomeSection from '../homepage-components/welcome-section';
 import DestinationsSection from '../homepage-components/destinations-section';
 import ToursSection from '../homepage-components/tours-section';
 import ServicesSection from '../homepage-components/services-section';
-import { getSlidesForPreload, getWelcomeSectionContent, getSsgDestinations, getHomepageSectionTitles, getSsgTours, getSsgServices } from '@/lib/firebase/firestore';
+import { getSlidesForPreload, getWelcomeSectionContentSSG, getSsgDestinations, getHomepageSectionTitlesSSG, getSsgTours, getSsgServices } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-static';
 
@@ -17,9 +17,9 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const slides = await getSlidesForPreload();
-  const welcomeContent = await getWelcomeSectionContent();
+  const welcomeContent = await getWelcomeSectionContentSSG();
   const destinations = await getSsgDestinations();
-  const homepageTitles = await getHomepageSectionTitles();
+  const homepageTitles = await getHomepageSectionTitlesSSG();
   const tours = await getSsgTours();
   const services = await getSsgServices();
 

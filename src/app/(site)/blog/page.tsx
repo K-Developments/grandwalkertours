@@ -1,5 +1,5 @@
 // src/app/(site)/blog/page.tsx
-import { getBlogPosts, getBlogPageHeroContent } from '@/lib/firebase/firestore';
+import { getSsgBlogPosts, getBlogPageHeroContent } from '@/lib/firebase/firestore';
 import BlogPageClient from './blog-page-client';
 import type { Metadata } from 'next';
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function BlogPage() {
-    const posts = await getBlogPosts();
+    const posts = await getSsgBlogPosts();
     const heroContent = await getBlogPageHeroContent();
 
     return <BlogPageClient posts={posts} heroContent={heroContent} />;
