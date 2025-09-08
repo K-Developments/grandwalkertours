@@ -178,29 +178,38 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
       )}
 
       {/* Bottom Content Container */}
-      <div className="absolute bottom-0 left-0 right-0 z-20">
-        <div className="container mx-auto px-4 py-8 md:py-12 flex justify-end">
-          <div className="w-full md:max-w-[50%] lg:max-w-[40%] text-right">
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={current}
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                variants={containerVariants}
-                className=" text-white "
-              >
-                <div className="overflow-hidden">
-                  <motion.h1 
-                    className="font-headline font-light text-white hero-headline-right tracking-tight"
-                    variants={slideFromRight}
-                  >
-                    {currentSlide?.headline}
-                  </motion.h1>
-                </div>
-              </motion.div>
-            </AnimatePresence>
-          </div>
+      <div className="absolute bottom-0 left-0 right-0 z-20 bg-transparent">
+        <div className="flex justify-center px-4 py-4 md:py-8">
+            <div className="w-full md:max-w-[60%]">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={current}
+                        initial="hidden"
+                        animate="visible"
+                        exit="hidden"
+                        variants={containerVariants}
+                        className="grid md:grid-cols-2 grid-col-1 items-center text-white"
+                    >
+                        <div className="overflow-hidden border-r-2 border-white text-white hidden md:block">
+                            <motion.div
+                                variants={slideFromRight}
+                                className="text-right mr-5 md:display-block display-none"
+                            >
+                                <p className="text-sm md:text-base lg:text-lg font-light italic text-white">"Discover the extraordinary"</p>
+                                <p className="text-xs md:text-sm opacity-70 mt-1">- Grand Walker Tours</p>
+                            </motion.div>
+                        </div>
+                        <div className="overflow-hidden">
+                            <motion.h1
+                                className="font-headline font-light text-3xl md:text-3xl lg:text-5xl tracking-tight text-left ml-5"
+                                variants={slideFromRight}
+                            >
+                                {currentSlide?.headline}
+                            </motion.h1>
+                        </div>
+                    </motion.div>
+                </AnimatePresence>
+            </div>
         </div>
       </div>
       
