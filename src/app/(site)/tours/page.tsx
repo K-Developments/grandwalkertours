@@ -1,6 +1,6 @@
 // src/app/tours/page.tsx
 import ToursPageClient from './tours-page-client';
-import { getTourPageHeroContent, getTourPageIntroContent, getSsgTourPageTours, getTourPageTourById } from '@/lib/firebase/firestore';
+import { getTourPageHeroContentSSG, getTourPageIntroContentSSG, getSsgTourPageTours, getTourPageTourById } from '@/lib/firebase/firestore';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
@@ -26,8 +26,8 @@ async function getTourData(tourId?: string) {
 export default async function ToursPage({ searchParams }: { searchParams: { tourId?: string } }) {
     const { tourId } = searchParams;
 
-    const heroContent = await getTourPageHeroContent();
-    const introContent = await getTourPageIntroContent();
+    const heroContent = await getTourPageHeroContentSSG();
+    const introContent = await getTourPageIntroContentSSG();
     const tours = await getSsgTourPageTours() || [];
     const { name: tourName, detail: tourDetail } = await getTourData(tourId);
     
