@@ -1,5 +1,5 @@
 // src/app/(site)/gallery/page.tsx
-import { getSsgGalleryItems, getGalleryPageHeroContent } from '@/lib/firebase/firestore';
+import { getSsgGalleryItems, getGalleryPageHeroContentSSG } from '@/lib/firebase/firestore';
 import GalleryPageClient from './gallery-page-client';
 import type { Metadata } from 'next';
 
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 export default async function GalleryPage() {
     const items = await getSsgGalleryItems();
-    const heroContent = await getGalleryPageHeroContent();
+    const heroContent = await getGalleryPageHeroContentSSG();
 
     return <GalleryPageClient items={items} heroContent={heroContent} />;
 }
