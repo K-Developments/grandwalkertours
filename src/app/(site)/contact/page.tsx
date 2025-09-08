@@ -4,7 +4,7 @@ import Link from 'next/link';
 import ContactHero from '@/app/contact/(components)/hero';
 import ContactFormSection from '@/app/contact/(components)/contact-form-section';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
-import { getContactPageHeroContent, getContactPageDetailsContent } from '@/lib/firebase/firestore';
+import { getContactPageHeroContentSSG, getContactPageDetailsContentSSG } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-static';
 
@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 }
 
 export default async function ContactPage() {
-  const heroContent = await getContactPageHeroContent();
-  const detailsContent = await getContactPageDetailsContent();
+  const heroContent = await getContactPageHeroContentSSG();
+  const detailsContent = await getContactPageDetailsContentSSG();
 
   return (
     <>
