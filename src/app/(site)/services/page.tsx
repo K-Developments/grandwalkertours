@@ -1,10 +1,11 @@
+
 // src/app/services/page.tsx
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import ServicesHero from '@/app/services/(components)/hero';
 import ServiceIntroSection from '@/app/services/(components)/intro';
 import ServicesList from '@/app/services/(components)/services-list';
-import { getServicePageHeroContent, getServicePageIntroContent, getSsgServicePageServices } from '@/lib/firebase/firestore';
+import { getServicePageHeroContentSSG, getServicePageIntroContentSSG, getSsgServicePageServices } from '@/lib/firebase/firestore';
 
 export const dynamic = 'force-static';
 
@@ -14,8 +15,8 @@ export const metadata: Metadata = {
 }
 
 export default async function ServicesPage() {
-  const heroContent = await getServicePageHeroContent();
-  const introContent = await getServicePageIntroContent();
+  const heroContent = await getServicePageHeroContentSSG();
+  const introContent = await getServicePageIntroContentSSG();
   const services = await getSsgServicePageServices();
 
   return (
