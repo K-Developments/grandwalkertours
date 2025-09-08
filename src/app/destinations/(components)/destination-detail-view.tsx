@@ -1,57 +1,20 @@
 // src/app/destinations/(components)/destination-detail-view.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getDestinationPageDestinationById } from '@/lib/firebase/firestore';
-import type { Destination, GalleryImage } from '@/lib/types';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import type { Destination } from '@/lib/types';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { Separator } from '@/components/ui/separator';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
 import { motion } from 'framer-motion';
 
 type DestinationDetailViewProps = {
-  destinationId: string;
+  destination: Destination;
   onBack: () => void;
 };
 
-const DestinationDetailView = ({ destinationId, onBack }: DestinationDetailViewProps) => {
-  const [destination, setDestination] = useState<Destination | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchDestination = async () => {
-      setLoading(true);
-      const destinationData = await getDestinationPageDestinationById(destinationId);
-      setDestination(destinationData);
-      setLoading(false);
-    };
-    fetchDestination();
-  }, [destinationId]);
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (!destination) {
-    return (
-      <div className="text-center py-16">
-        <h2 className="text-2xl font-light">Destination Not Found</h2>
-        <p className="text-muted-foreground mb-4">The requested destination could not be found.</p>
-        <button onClick={onBack} className="text-primary hover:underline">
-          <ArrowLeft className="inline-block mr-2 h-4 w-4" />
-          Back to all destinations
-        </button>
-      </div>
-    );
-  }
-
+const DestinationDetailView = ({ destination, onBack }: DestinationDetailViewProps) => {
   return (
     <div className="bg-background">
       {/* Hero Image & Title */}
@@ -124,7 +87,7 @@ const DestinationDetailView = ({ destinationId, onBack }: DestinationDetailViewP
         {/* Additional Sections */}
         {destination.additionalSections && destination.additionalSections.length > 0 && (
             <div className="space-y-16 md:space-y-24">
-            {destination.additionalSections.map((section, index) => (
+            {destination.additionalSections.map((section) => (
                 <MotionWrapper key={section.id}>
                 <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-8 md:gap-16">
                     <div className="relative w-full h-[350px] md:h-[500px]">
@@ -140,7 +103,6 @@ const DestinationDetailView = ({ destinationId, onBack }: DestinationDetailViewP
                     </div>
                     <div className="text-foreground p-8 md:p-0 z-10 text-center md:text-left">
                         <h3 className="font-headline text-3xl font-light mb-4">{section.title}</h3>
-                        <Separator className="my-4" />
                         <p className="text-muted-foreground whitespace-pre-line">{section.description}</p>
                     </div>
                 </div>

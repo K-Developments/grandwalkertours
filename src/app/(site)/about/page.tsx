@@ -6,17 +6,25 @@ import MissionVisionSection from '@/app/about/(components)/mission-vision';
 import WhyChooseUsSection from '@/app/about/(components)/why-choose-us';
 import TestimonialsSection from '@/app/about/(components)/testimonials';
 import Link from 'next/link';
-import { ChevronRight } from 'lucide-react';
+import { getAboutHeroContent, getMissionVisionContent, getAboutSectionTitles, getSsgWhyChooseUsItems, getSsgTestimonials } from '@/lib/firebase/firestore';
+
+export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'About Us',
   description: 'Learn about Grand Walker Tours, our mission, our vision, and the team dedicated to creating your dream journeys. Discover our passion for travel and commitment to excellence.',
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const heroContent = await getAboutHeroContent();
+  const missionVisionContent = await getMissionVisionContent();
+  const sectionTitles = await getAboutSectionTitles();
+  const whyChooseUsItems = await getSsgWhyChooseUsItems();
+  const testimonials = await getSsgTestimonials();
+
   return (
     <>
-      <AboutHero />
+      <AboutHero content={heroContent} />
       <div className="container mx-auto px-4 py-4">
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -35,11 +43,11 @@ export default function AboutPage() {
           </nav>
       </div>
       <MotionWrapper className="py-8 md:py-12">
-        <MissionVisionSection />
+        <MissionVisionSection content={missionVisionContent} titles={sectionTitles} />
       </MotionWrapper>
-      <WhyChooseUsSection />
+      <WhyChooseUsSection items={whyChooseUsItems} titles={sectionTitles} />
       <MotionWrapper>
-        <TestimonialsSection />
+        <TestimonialsSection testimonials={testimonials} titles={sectionTitles} />
       </MotionWrapper>
     </>
   );

@@ -3,36 +3,21 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { getTours, getHomepageSectionTitles } from '@/lib/firebase/firestore';
 import type { Tour, HomepageSectionTitles } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Carousel, CarouselContent, CarouselItem, type CarouselApi } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export default function ToursSection() {
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [titles, setTitles] = useState<HomepageSectionTitles | null>(null);
-  const [loading, setLoading] = useState(true);
+type ToursSectionProps = {
+    tours: Tour[];
+    titles: HomepageSectionTitles | null;
+}
+
+export default function ToursSection({ tours, titles }: ToursSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [api, setApi] = useState<CarouselApi>();
-
-  useEffect(() => {
-    const unsubscribeTours = getTours((data) => {
-      setTours(data);
-      if (titles) setLoading(false);
-    });
-    const unsubscribeTitles = getHomepageSectionTitles((data) => {
-      setTitles(data);
-      if (tours.length > 0 || data) setLoading(false);
-    });
-    return () => {
-      unsubscribeTours();
-      unsubscribeTitles();
-    };
-  }, [tours.length, titles]);
 
   useEffect(() => {
     if (!api) return;
@@ -48,14 +33,6 @@ export default function ToursSection() {
   const scrollNext = useCallback(() => {
     api?.scrollNext()
   }, [api])
-
-  if (loading) {
-    return (
-      <section id="tours" className="relative w-full h-[90vh] bg-muted">
-        <Skeleton className="w-full h-full" />
-      </section>
-    );
-  }
 
   if (tours.length === 0) {
     return null;

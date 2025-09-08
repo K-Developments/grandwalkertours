@@ -1,11 +1,9 @@
 // src/app/tours/(components)/tours-list.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { getTourPageTours, getTourPageIntroContent } from '@/lib/firebase/firestore';
 import type { Tour, TourPageIntroContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
@@ -14,57 +12,18 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 type ToursListProps = {
+  tours: Tour[];
+  intro: TourPageIntroContent | null;
   onTourSelect: (id: string, name: string) => void;
 };
 
-
-const ToursList = ({ onTourSelect }: ToursListProps) => {
-  const [tours, setTours] = useState<Tour[]>([]);
-  const [intro, setIntro] = useState<TourPageIntroContent | null>(null);
-  const [loading, setLoading] = useState(true);
+const ToursList = ({ tours, intro, onTourSelect }: ToursListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    const unsubscribeTours = getTourPageTours((data) => {
-      setTours(data);
-      if (intro !== null) setLoading(false);
-    });
-    const unsubscribeIntro = getTourPageIntroContent((data) => {
-      setIntro(data);
-      if (tours.length > 0 || data) setLoading(false);
-    });
-    return () => {
-      unsubscribeTours();
-      unsubscribeIntro();
-    };
-  }, [tours.length, intro]);
 
   const filteredTours = tours.filter(tour =>
     tour.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     tour.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  if (loading) {
-    return (
-      <section className="py-12 md:py-24 bg-background">
-        <div className="container mx-auto px-4 space-y-24">
-          <Skeleton className="h-10 w-1/2 mx-auto mb-12" />
-          {[...Array(2)].map((_, i) => (
-            <div key={i} className="flex flex-col md:flex-row gap-8">
-              <div className="w-full md:w-1/2">
-                <Skeleton className="h-[400px] w-full" />
-              </div>
-              <div className="w-full md:w-1/2">
-                <Skeleton className="h-4 w-3/4 mb-4" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-10 w-32 mt-6" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-12 md:py-24 bg-background overflow-hidden">

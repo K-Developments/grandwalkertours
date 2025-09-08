@@ -4,38 +4,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getDestinations, getHomepageSectionTitles } from '@/lib/firebase/firestore';
 import type { Destination, HomepageSectionTitles } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from '@/components/ui/carousel';
-import { motion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils';
 
-export default function DestinationsSection() {
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [titles, setTitles] = useState<HomepageSectionTitles | null>(null);
-  const [loading, setLoading] = useState(true);
+type DestinationsSectionProps = {
+  destinations: Destination[];
+  titles: HomepageSectionTitles | null;
+}
+
+export default function DestinationsSection({ destinations, titles }: DestinationsSectionProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
   const [count, setCount] = useState(0);
-
-   useEffect(() => {
-    const unsubscribeDestinations = getDestinations((data) => {
-      setDestinations(data);
-      if (titles) setLoading(false);
-    });
-     const unsubscribeTitles = getHomepageSectionTitles((data) => {
-        setTitles(data);
-        if (destinations.length > 0 || data) setLoading(false);
-    });
-
-    return () => {
-        unsubscribeDestinations();
-        unsubscribeTitles();
-    };
-  }, [destinations.length, titles]);
 
   useEffect(() => {
     if (!api) {
@@ -57,25 +39,6 @@ export default function DestinationsSection() {
   const scrollNext = useCallback(() => {
     api?.scrollNext()
   }, [api])
-  
-  if (loading) {
-    return (
-      <section id="destinations" className="py-16 md:py-24 overflow-hidden">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <Skeleton className="h-10 w-1/2 mx-auto" />
-          </div>
-          <div className="flex space-x-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="flex-shrink-0 w-1/3 p-2">
-                 <Skeleton className="h-[450px] md:h-[550px] w-full" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
   
   return (
     <section id="destinations" className="py-16 md:py-24 overflow-hidden bg-white">

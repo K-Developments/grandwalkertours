@@ -1,35 +1,17 @@
 // src/app/destinations/(components)/hero.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getDestinationPageHeroContent } from '@/lib/firebase/firestore';
 import type { DestinationPageHeroContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
-const DestinationsHero = () => {
-  const [content, setContent] = useState<DestinationPageHeroContent | null>(null);
-  const [loading, setLoading] = useState(true);
+type DestinationsHeroProps = {
+    content: DestinationPageHeroContent | null;
+}
 
-  useEffect(() => {
-    const unsubscribe = getDestinationPageHeroContent((data) => {
-      setContent(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
+const DestinationsHero = ({ content }: DestinationsHeroProps) => {
   const heroImage = content?.image || 'https://placehold.co/1920x400.png';
   const imageHint = content?.imageHint || 'beautiful travel destination';
-
-  if (loading) {
-    return (
-       <section className="relative h-[60vh] md:h-[120vh] w-full bg-muted">
-         <Skeleton className="w-full h-full" />
-       </section>
-    );
-  }
 
   return (
     <section className="relative h-[60vh] md:h-[120vh] w-full bg-black">

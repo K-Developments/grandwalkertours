@@ -1,3 +1,4 @@
+// src/lib/firebase/firestore.ts
 import { db } from '@/lib/firebase';
 import {
   collection,
@@ -8,7 +9,6 @@ import {
   query,
   setDoc,
   getDoc,
-  type DocumentData,
   updateDoc,
   Timestamp,
   orderBy,
@@ -16,6 +16,107 @@ import {
   where,
 } from 'firebase/firestore';
 import type { HeroSlide, WelcomeSectionContent, Destination, Tour, Service, AboutHeroContent, MissionVisionContent, WhyChooseUsItem, Testimonial, ServicePageHeroContent, ServicePageIntroContent, TourPageHeroContent, TourPageIntroContent, DestinationPageHeroContent, DestinationPageIntroContent, ContactPageHeroContent, ContactPageDetailsContent, CookieConsentLog, FAQItem, FaqPageHeroContent, HomepageSectionTitles, AboutSectionTitles, CookiePolicyContent, PrivacyPolicyContent, GalleryItem, GalleryPageHeroContent, BlogPageHeroContent, BlogPost } from '@/lib/types';
+import { cache } from 'react';
+
+
+// --- REST API Implementation ---
+
+const PROJECT_ID = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
+
+if (!PROJECT_ID || !API_KEY) {
+  throw new Error("Firebase Project ID or API Key is not configured in environment variables.");
+}
+
+const API_BASE_URL = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
+
+const parseFirestoreResponse = (doc: any, isCollection = false) => {
+    if (!doc) return null;
+
+    const parseFields = (fields: any) => {
+        const parsed: { [key: string]: any } = {};
+        if (!fields) return parsed;
+        for (const key in fields) {
+            const value = fields[key];
+            if (!value) continue;
+            const valueKey = Object.keys(value)[0];
+            switch (valueKey) {
+                case 'stringValue':
+                case 'integerValue':
+                case 'doubleValue':
+                case 'booleanValue':
+                    parsed[key] = value[valueKey];
+                    break;
+                case 'timestampValue':
+                    parsed[key] = new Date(value[valueKey]);
+                    break;
+                case 'mapValue':
+                    parsed[key] = parseFields(value.mapValue.fields || {});
+                    break;
+                case 'arrayValue':
+                     parsed[key] = (value.arrayValue.values || []).map((v: any) => {
+                        const nestedValueKey = Object.keys(v)[0];
+                        if (!nestedValueKey) return null;
+                        if (nestedValueKey === 'mapValue') {
+                            return parseFields(v.mapValue.fields || {});
+                        }
+                        return v[nestedValueKey];
+                    }).filter(v => v !== null);
+                    break;
+                case 'nullValue':
+                    parsed[key] = null;
+                    break;
+                default:
+                    parsed[key] = value[valueKey];
+                    break;
+            }
+        }
+        return parsed;
+    };
+    
+    if (isCollection) {
+        return doc.documents?.map((d: any) => ({
+            id: d.name.split('/').pop(),
+            ...parseFields(d.fields)
+        })) || [];
+    }
+
+    return { id: doc.name.split('/').pop(), ...parseFields(doc.fields) };
+};
+
+const fetchFirestoreDoc = cache(async (path: string) => {
+    const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
+    
+    const res = await fetch(url, { next: { revalidate: false } }); // No revalidation for static build
+    
+    if (!res.ok) {
+        if (res.status === 404) {
+            return null; // Return null for optional documents
+        }
+        // For other errors, throw to fail the build
+        const errorText = await res.text();
+        throw new Error(`Failed to fetch doc '${path}': ${res.status} ${res.statusText}. Response: ${errorText}`);
+    }
+    
+    const json = await res.json();
+    return parseFirestoreResponse(json);
+});
+
+const fetchFirestoreCollection = cache(async (path: string, options?: { revalidate: number | false | undefined }) => {
+    const url = `${API_BASE_URL}/${path}?key=${API_KEY}`;
+    
+    const res = await fetch(url, { next: { revalidate: options?.revalidate ?? false } });
+    
+    if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Failed to fetch collection '${path}': ${res.status} ${res.statusText}. Response: ${errorText}`);
+    }
+    
+    const json = await res.json();
+    return parseFirestoreResponse(json, true);
+});
+
 
 const SLIDES_COLLECTION = 'heroSlides';
 const HOMEPAGE_COLLECTION = 'homepageContent';
@@ -59,1166 +160,235 @@ const FAQ_COLLECTION = 'faq';
 const COOKIE_POLICY_DOC = 'cookiePolicy';
 const PRIVACY_POLICY_DOC = 'privacyPolicy';
 
+// --- CMS Write Operations (Still use the SDK) ---
 
-// --- Hero Slider ---
-
-// Get all slides with real-time updates (for client components)
-export function getSlides(callback: (slides: HeroSlide[]) => void) {
-  const q = query(collection(db, SLIDES_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const slides: HeroSlide[] = [];
-    querySnapshot.forEach((doc) => {
-      slides.push({ id: doc.id, ...doc.data() } as HeroSlide);
-    });
-    callback(slides);
-  });
-  return unsubscribe;
-}
-
-// Get all slides for server-side rendering/preloading
-export async function getSlidesForPreload(): Promise<HeroSlide[]> {
-    try {
-        const q = query(collection(db, SLIDES_COLLECTION));
-        const querySnapshot = await getDocs(q);
-        const slides: HeroSlide[] = [];
-        querySnapshot.forEach((doc) => {
-            slides.push({ id: doc.id, ...doc.data() } as HeroSlide);
-        });
-        return slides;
-    } catch (e) {
-        console.error('Error getting documents for preload: ', e);
-        return []; // Return empty array on error
-    }
-}
-
-
-// Add a new slide
 export async function addSlide(slide: Omit<HeroSlide, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, SLIDES_COLLECTION), slide);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add slide');
-  }
+  return await addDoc(collection(db, SLIDES_COLLECTION), slide);
 }
-
-// Update an existing slide
 export async function updateSlide(id: string, slide: Omit<HeroSlide, 'id'>) {
-  try {
-    const docRef = doc(db, SLIDES_COLLECTION, id);
-    await updateDoc(docRef, slide);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update slide');
-  }
+  return await updateDoc(doc(db, SLIDES_COLLECTION, id), slide);
 }
-
-// Delete a slide
 export async function deleteSlide(id: string) {
-  try {
-    await deleteDoc(doc(db, SLIDES_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete slide');
-  }
+  return await deleteDoc(doc(db, SLIDES_COLLECTION, id));
 }
-
-
-// --- Welcome Section ---
-
-// Get the welcome section content with real-time updates
-export function getWelcomeSectionContent(callback: (content: WelcomeSectionContent | null) => void) {
-  const docRef = doc(db, HOMEPAGE_COLLECTION, WELCOME_SECTION_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as WelcomeSectionContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-// Update the welcome section content
 export async function updateWelcomeSectionContent(content: WelcomeSectionContent) {
-  try {
-    const docRef = doc(db, HOMEPAGE_COLLECTION, WELCOME_SECTION_DOC);
-    // Ensure optional fields are not undefined
-    const dataToSave = {
-      ...content,
-      buttonText: content.buttonText || '',
-      buttonLink: content.buttonLink || '',
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-      headline2: content.headline2 || '',
-      description2: content.description2 || '',
-      image2: content.image2 || '',
-      imageHint2: content.imageHint2 || '',
-      buttonText2: content.buttonText2 || '',
-      buttonLink2: content.buttonLink2 || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update welcome section content');
-  }
+  return await setDoc(doc(db, HOMEPAGE_COLLECTION, WELCOME_SECTION_DOC), content, { merge: true });
 }
-
-// --- Homepage Section Titles ---
-export function getHomepageSectionTitles(callback: (content: HomepageSectionTitles | null) => void) {
-  const docRef = doc(db, HOMEPAGE_COLLECTION, HOMEPAGE_SECTION_TITLES_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as HomepageSectionTitles);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
 export async function updateHomepageSectionTitles(content: HomepageSectionTitles) {
-  try {
-    const docRef = doc(db, HOMEPAGE_COLLECTION, HOMEPAGE_SECTION_TITLES_DOC);
-    await setDoc(docRef, content, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update homepage section titles');
-  }
+  return await setDoc(doc(db, HOMEPAGE_COLLECTION, HOMEPAGE_SECTION_TITLES_DOC), content, { merge: true });
 }
-
-// --- About Page Section Titles ---
-export function getAboutSectionTitles(callback: (content: AboutSectionTitles | null) => void) {
-  const docRef = doc(db, ABOUTPAGE_COLLECTION, ABOUT_SECTION_TITLES_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as AboutSectionTitles);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
+export async function addDestination(destination: Omit<Destination, 'id'>) {
+  return await addDoc(collection(db, DESTINATIONS_COLLECTION), destination);
 }
-
-export async function updateAboutSectionTitles(content: AboutSectionTitles) {
-  try {
-    const docRef = doc(db, ABOUTPAGE_COLLECTION, ABOUT_SECTION_TITLES_DOC);
-    await setDoc(docRef, content, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update about page section titles');
-  }
+export async function updateDestination(id: string, destination: Partial<Destination>) {
+  return await updateDoc(doc(db, DESTINATIONS_COLLECTION, id), destination);
 }
-
-
-// --- About Page Hero Section ---
-
-// Get the about page hero content with real-time updates
-export function getAboutHeroContent(callback: (content: AboutHeroContent | null) => void) {
-  const docRef = doc(db, ABOUTPAGE_COLLECTION, ABOUT_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as AboutHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
+export async function deleteDestination(id: string) {
+  return await deleteDoc(doc(db, DESTINATIONS_COLLECTION, id));
 }
-
-// Update the about page hero content
+export async function addTour(tour: Omit<Tour, 'id'>) {
+  return await addDoc(collection(db, TOURS_COLLECTION), tour);
+}
+export async function updateTour(id: string, tour: Partial<Tour>) {
+  return await updateDoc(doc(db, TOURS_COLLECTION, id), tour);
+}
+export async function deleteTour(id: string) {
+  return await deleteDoc(doc(db, TOURS_COLLECTION, id));
+}
+export async function addService(service: Omit<Service, 'id'>) {
+  return await addDoc(collection(db, SERVICES_COLLECTION), service);
+}
+export async function updateService(id: string, service: Omit<Service, 'id'>) {
+  return await updateDoc(doc(db, SERVICES_COLLECTION, id), service);
+}
+export async function deleteService(id: string) {
+  return await deleteDoc(doc(db, SERVICES_COLLECTION, id));
+}
 export async function updateAboutHeroContent(content: AboutHeroContent) {
-  try {
-    const docRef = doc(db, ABOUTPAGE_COLLECTION, ABOUT_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update about page hero content');
-  }
+    return await setDoc(doc(db, ABOUTPAGE_COLLECTION, ABOUT_HERO_DOC), content, { merge: true });
 }
-
-// --- Service Page Hero Section ---
-
-// Get the service page hero content with real-time updates
-export function getServicePageHeroContent(callback: (content: ServicePageHeroContent | null) => void) {
-  const docRef = doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as ServicePageHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
+export async function updateAboutSectionTitles(content: AboutSectionTitles) {
+    return await setDoc(doc(db, ABOUTPAGE_COLLECTION, ABOUT_SECTION_TITLES_DOC), content, { merge: true });
 }
-
-// Update the service page hero content
-export async function updateServicePageHeroContent(content: ServicePageHeroContent) {
-  try {
-    const docRef = doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update service page hero content');
-  }
-}
-
-// --- Tour Page Hero Section ---
-
-// Get the tour page hero content with real-time updates
-export function getTourPageHeroContent(callback: (content: TourPageHeroContent | null) => void) {
-  const docRef = doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as TourPageHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-// Update the tour page hero content
-export async function updateTourPageHeroContent(content: TourPageHeroContent) {
-  try {
-    const docRef = doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update tour page hero content');
-  }
-}
-
-// --- Destination Page Hero Section ---
-
-// Get the destination page hero content with real-time updates
-export function getDestinationPageHeroContent(callback: (content: DestinationPageHeroContent | null) => void) {
-  const docRef = doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as DestinationPageHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-// Update the destination page hero content
-export async function updateDestinationPageHeroContent(content: DestinationPageHeroContent) {
-  try {
-    const docRef = doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update destination page hero content');
-  }
-}
-
-// --- Contact Page Hero Section ---
-
-// Get the contact page hero content with real-time updates
-export function getContactPageHeroContent(callback: (content: ContactPageHeroContent | null) => void) {
-  const docRef = doc(db, CONTACTPAGE_COLLECTION, CONTACT_PAGE_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as ContactPageHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-// Update the contact page hero content
-export async function updateContactPageHeroContent(content: ContactPageHeroContent) {
-  try {
-    const docRef = doc(db, CONTACTPAGE_COLLECTION, CONTACT_PAGE_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update contact page hero content');
-  }
-}
-
-// --- FAQ Page Hero Section ---
-
-export function getFaqPageHeroContent(callback: (content: FaqPageHeroContent | null) => void) {
-  const docRef = doc(db, FAQPAGE_COLLECTION, FAQ_PAGE_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as FaqPageHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-export async function updateFaqPageHeroContent(content: FaqPageHeroContent) {
-  try {
-    const docRef = doc(db, FAQPAGE_COLLECTION, FAQ_PAGE_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update FAQ page hero content');
-  }
-}
-
-// --- Gallery Page Hero Section ---
-export function getGalleryPageHeroContent(callback: (content: GalleryPageHeroContent | null) => void) {
-  const docRef = doc(db, GALLERYPAGE_COLLECTION, GALLERY_PAGE_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as GalleryPageHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-export async function updateGalleryPageHeroContent(content: GalleryPageHeroContent) {
-  try {
-    const docRef = doc(db, GALLERYPAGE_COLLECTION, GALLERY_PAGE_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update Gallery page hero content');
-  }
-}
-
-// --- Blog Page Hero Section ---
-export function getBlogPageHeroContent(callback: (content: BlogPageHeroContent | null) => void) {
-  const docRef = doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as BlogPageHeroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-export async function updateBlogPageHeroContent(content: BlogPageHeroContent) {
-  try {
-    const docRef = doc(db, BLOGPAGE_COLLECTION, BLOG_PAGE_HERO_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update Blog page hero content');
-  }
-}
-
-
-
-// --- Contact Page Details Section ---
-
-export function getContactPageDetailsContent(callback: (content: ContactPageDetailsContent | null) => void) {
-  const docRef = doc(db, CONTACTPAGE_COLLECTION, CONTACT_DETAILS_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as ContactPageDetailsContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-export async function updateContactPageDetailsContent(content: ContactPageDetailsContent) {
-  try {
-    const docRef = doc(db, CONTACTPAGE_COLLECTION, CONTACT_DETAILS_DOC);
-    const dataToSave = {
-      ...content,
-      image: content.image || '',
-      imageHint: content.imageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update contact page details content');
-  }
-}
-
-
-// --- Service Page Intro Section ---
-
-// Get the service page intro content with real-time updates
-export function getServicePageIntroContent(callback: (content: ServicePageIntroContent | null) => void) {
-  const docRef = doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_INTRO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as ServicePageIntroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-// Update the service page intro content
-export async function updateServicePageIntroContent(content: ServicePageIntroContent) {
-  try {
-    const docRef = doc(db, SERVICEPAGE_COLLECTION, SERVICE_PAGE_INTRO_DOC);
-    const dataToSave = { ...content };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update service page intro content');
-  }
-}
-
-// --- Tour Page Intro Section ---
-
-// Get the tour page intro content with real-time updates
-export function getTourPageIntroContent(callback: (content: TourPageIntroContent | null) => void) {
-  const docRef = doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_INTRO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as TourPageIntroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-// Update the tour page intro content
-export async function updateTourPageIntroContent(content: TourPageIntroContent) {
-  try {
-    const docRef = doc(db, TOURPAGE_COLLECTION, TOUR_PAGE_INTRO_DOC);
-    const dataToSave = { ...content };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update tour page intro content');
-  }
-}
-
-// --- Destination Page Intro Section ---
-
-export function getDestinationPageIntroContent(callback: (content: DestinationPageIntroContent | null) => void) {
-  const docRef = doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_INTRO_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as DestinationPageIntroContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-export async function updateDestinationPageIntroContent(content: DestinationPageIntroContent) {
-  try {
-    const docRef = doc(db, DESTINATIONPAGE_COLLECTION, DESTINATION_PAGE_INTRO_DOC);
-    await setDoc(docRef, content, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update destination page intro content');
-  }
-}
-
-
-// --- About Page Mission/Vision Section ---
-
-// Get the mission/vision content with real-time updates
-export function getMissionVisionContent(callback: (content: MissionVisionContent | null) => void) {
-  const docRef = doc(db, ABOUTPAGE_COLLECTION, MISSION_VISION_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    if (docSnap.exists()) {
-      callback(docSnap.data() as MissionVisionContent);
-    } else {
-      callback(null);
-    }
-  });
-  return unsubscribe;
-}
-
-// Update the mission/vision content
 export async function updateMissionVisionContent(content: MissionVisionContent) {
-  try {
-    const docRef = doc(db, ABOUTPAGE_COLLECTION, MISSION_VISION_DOC);
-    const dataToSave = {
-      ...content,
-      missionImage: content.missionImage || '',
-      missionImageHint: content.missionImageHint || '',
-      visionImage: content.visionImage || '',
-      visionImageHint: content.visionImageHint || '',
-    };
-    await setDoc(docRef, dataToSave, { merge: true });
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update mission/vision content');
-  }
+    return await setDoc(doc(db, ABOUTPAGE_COLLECTION, MISSION_VISION_DOC), content, { merge: true });
 }
-
-// --- Why Choose Us Section ---
-
-// Get all "Why Choose Us" items with real-time updates
-export function getWhyChooseUsItems(callback: (items: WhyChooseUsItem[]) => void) {
+export async function getWhyChooseUsItems(callback: (items: WhyChooseUsItem[]) => void) {
   const q = query(collection(db, WHY_CHOOSE_US_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+  return onSnapshot(q, (querySnapshot) => {
     const items: WhyChooseUsItem[] = [];
-    querySnapshot.forEach((doc) => {
-      items.push({ id: doc.id, ...doc.data() } as WhyChooseUsItem);
-    });
+    querySnapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() } as WhyChooseUsItem));
     callback(items);
   });
-  return unsubscribe;
 }
-
-// Add a new "Why Choose Us" item
 export async function addWhyChooseUsItem(item: Omit<WhyChooseUsItem, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, WHY_CHOOSE_US_COLLECTION), item);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add Why Choose Us item');
-  }
+  return await addDoc(collection(db, WHY_CHOOSE_US_COLLECTION), item);
 }
-
-// Update an existing "Why Choose Us" item
 export async function updateWhyChooseUsItem(id: string, item: Partial<WhyChooseUsItem>) {
-  try {
-    const docRef = doc(db, WHY_CHOOSE_US_COLLECTION, id);
-    await updateDoc(docRef, item);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update Why Choose Us item');
-  }
+  return await updateDoc(doc(db, WHY_CHOOSE_US_COLLECTION, id), item);
 }
-
-// Delete a "Why Choose Us" item
 export async function deleteWhyChooseUsItem(id: string) {
-  try {
-    await deleteDoc(doc(db, WHY_CHOOSE_US_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete Why Choose Us item');
-  }
+  return await deleteDoc(doc(db, WHY_CHOOSE_US_COLLECTION, id));
 }
-
-// --- Testimonials Section ---
-
-// Get all testimonials with real-time updates
-export function getTestimonials(callback: (testimonials: Testimonial[]) => void) {
+export async function getTestimonials(callback: (testimonials: Testimonial[]) => void) {
   const q = query(collection(db, TESTIMONIALS_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+  return onSnapshot(q, (querySnapshot) => {
     const testimonials: Testimonial[] = [];
-    querySnapshot.forEach((doc) => {
-      testimonials.push({ id: doc.id, ...doc.data() } as Testimonial);
-    });
+    querySnapshot.forEach((doc) => testimonials.push({ id: doc.id, ...doc.data() } as Testimonial));
     callback(testimonials);
   });
-  return unsubscribe;
 }
-
-// Add a new testimonial
 export async function addTestimonial(testimonial: Omit<Testimonial, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, TESTIMONIALS_COLLECTION), testimonial);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add testimonial');
-  }
+  return await addDoc(collection(db, TESTIMONIALS_COLLECTION), testimonial);
 }
-
-// Update an existing testimonial
 export async function updateTestimonial(id: string, testimonial: Partial<Testimonial>) {
-  try {
-    const docRef = doc(db, TESTIMONIALS_COLLECTION, id);
-    await updateDoc(docRef, testimonial);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update testimonial');
-  }
+  return await updateDoc(doc(db, TESTIMONIALS_COLLECTION, id), testimonial);
 }
-
-// Delete a testimonial
 export async function deleteTestimonial(id: string) {
-  try {
-    await deleteDoc(doc(db, TESTIMONIALS_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete testimonial');
-  }
+  return await deleteDoc(doc(db, TESTIMONIALS_COLLECTION, id));
 }
-
-
-// --- Destinations Section (Homepage) ---
-
-// Get all destinations with real-time updates
-export function getDestinations(callback: (destinations: Destination[]) => void) {
-  const q = query(collection(db, DESTINATIONS_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const destinations: Destination[] = [];
-    querySnapshot.forEach((doc) => {
-      destinations.push({ id: doc.id, ...doc.data() } as Destination);
-    });
-    callback(destinations);
-  });
-  return unsubscribe;
-}
-
-// Add a new destination
-export async function addDestination(destination: Omit<Destination, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, DESTINATIONS_COLLECTION), destination);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add destination');
-  }
-}
-
-// Update an existing destination
-export async function updateDestination(id: string, destination: Partial<Destination>) {
-  try {
-    const docRef = doc(db, DESTINATIONS_COLLECTION, id);
-    await updateDoc(docRef, destination);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update destination');
-  }
-}
-
-// Delete a destination
-export async function deleteDestination(id: string) {
-  try {
-    await deleteDoc(doc(db, DESTINATIONS_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete destination');
-  }
-}
-
-// --- Destinations Section (Destinations Page) ---
-
-// Get a single destination from the destinations page collection
-export async function getDestinationPageDestinationById(id: string): Promise<Destination | null> {
-  const docRef = doc(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION, id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as Destination;
-  }
-  return null;
-}
-
-export function getDestinationPageDestinations(callback: (destinations: Destination[]) => void) {
-  const q = query(collection(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const destinations: Destination[] = [];
-    querySnapshot.forEach((doc) => {
-      destinations.push({ id: doc.id, ...doc.data() } as Destination);
-    });
-    callback(destinations);
-  });
-  return unsubscribe;
-}
-
-export async function addDestinationPageDestination(destination: Omit<Destination, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION), destination);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add destination');
-  }
-}
-
-export async function updateDestinationPageDestination(id: string, destination: Partial<Destination>) {
-  try {
-    const docRef = doc(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION, id);
-    await updateDoc(docRef, destination);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update destination');
-  }
-}
-
-export async function deleteDestinationPageDestination(id: string) {
-  try {
-    await deleteDoc(doc(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete destination');
-  }
-}
-
-// --- Homepage Tours Section ---
-
-// Get all tours with real-time updates
-export function getTours(callback: (tours: Tour[]) => void) {
-  const q = query(collection(db, TOURS_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const tours: Tour[] = [];
-    querySnapshot.forEach((doc) => {
-      tours.push({ id: doc.id, ...doc.data() } as Tour);
-    });
-    callback(tours);
-  });
-  return unsubscribe;
-}
-
-// Add a new tour
-export async function addTour(tour: Omit<Tour, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, TOURS_COLLECTION), tour);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add tour');
-  }
-}
-
-// Update an existing tour
-export async function updateTour(id: string, tour: Partial<Tour>) {
-  try {
-    const docRef = doc(db, TOURS_COLLECTION, id);
-    await updateDoc(docRef, tour);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update tour');
-  }
-}
-
-
-// Delete a tour
-export async function deleteTour(id: string) {
-  try {
-    await deleteDoc(doc(db, TOURS_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete tour');
-  }
-}
-
-// --- Tour Page Tours Section ---
-
-// Get a single tour from the tours page collection
-export async function getTourPageTourById(id: string): Promise<Tour | null> {
-  const docRef = doc(db, TOUR_PAGE_TOURS_COLLECTION, id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as Tour;
-  }
-  return null;
-}
-
-// Get all tours for the tours page with real-time updates
-export function getTourPageTours(callback: (tours: Tour[]) => void) {
-  const q = query(collection(db, TOUR_PAGE_TOURS_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const tours: Tour[] = [];
-    querySnapshot.forEach((doc) => {
-      tours.push({ id: doc.id, ...doc.data() } as Tour);
-    });
-    callback(tours);
-  });
-  return unsubscribe;
-}
-
-// Add a new tour for the tours page
-export async function addTourPageTour(tour: Omit<Tour, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, TOUR_PAGE_TOURS_COLLECTION), tour);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add tour page tour');
-  }
-}
-
-// Update an existing tour on the tours page
-export async function updateTourPageTour(id: string, tour: Partial<Tour>) {
-  try {
-    const docRef = doc(db, TOUR_PAGE_TOURS_COLLECTION, id);
-    await updateDoc(docRef, tour);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update tour page tour');
-  }
-}
-
-// Delete a tour from the tours page
-export async function deleteTourPageTour(id: string) {
-  try {
-    await deleteDoc(doc(db, TOUR_PAGE_TOURS_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete tour page tour');
-  }
-}
-
-
-// --- Homepage Services Section ---
-
-// Get all services with real-time updates
-export function getServices(callback: (services: Service[]) => void) {
-  const q = query(collection(db, SERVICES_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const services: Service[] = [];
-    querySnapshot.forEach((doc) => {
-      services.push({ id: doc.id, ...doc.data() } as Service);
-    });
-    callback(services);
-  });
-  return unsubscribe;
-}
-
-// Add a new service
-export async function addService(service: Omit<Service, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, SERVICES_COLLECTION), service);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add service');
-  }
-}
-
-// Update an existing service
-export async function updateService(id: string, service: Omit<Service, 'id'>) {
-  try {
-    const docRef = doc(db, SERVICES_COLLECTION, id);
-    await updateDoc(docRef, service);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update service');
-  }
-}
-
-// Delete a service
-export async function deleteService(id: string) {
-  try {
-    await deleteDoc(doc(db, SERVICES_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete service');
-  }
-}
-
-// --- Service Page Services Section ---
-
-// Get all services for the service page with real-time updates
-export function getServicePageServices(callback: (services: Service[]) => void) {
-  const q = query(collection(db, SERVICE_PAGE_SERVICES_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const services: Service[] = [];
-    querySnapshot.forEach((doc) => {
-      services.push({ id: doc.id, ...doc.data() } as Service);
-    });
-    callback(services);
-  });
-  return unsubscribe;
-}
-
-// Add a new service for the service page
-export async function addServicePageService(service: Omit<Service, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, SERVICE_PAGE_SERVICES_COLLECTION), service);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add service page service');
-  }
-}
-
-// Update an existing service on the service page
-export async function updateServicePageService(id: string, service: Partial<Service>) {
-  try {
-    const docRef = doc(db, SERVICE_PAGE_SERVICES_COLLECTION, id);
-    await updateDoc(docRef, service);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update service page service');
-  }
-}
-
-// Delete a service from the service page
-export async function deleteServicePageService(id: string) {
-  try {
-    await deleteDoc(doc(db, SERVICE_PAGE_SERVICES_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete service page service');
-  }
-}
-
-// --- Blog Posts ---
-
-// Get all blog posts once for server-side rendering
-export async function getBlogPosts(): Promise<BlogPost[]> {
-  try {
+export async function getBlogPostsWithUpdates(callback: (posts: BlogPost[]) => void) {
     const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('publishedAt', 'desc'));
-    const querySnapshot = await getDocs(q);
-    const posts: BlogPost[] = [];
-    querySnapshot.forEach((doc) => {
-      posts.push({ id: doc.id, ...doc.data() } as BlogPost);
+    return onSnapshot(q, (querySnapshot) => {
+        const posts: BlogPost[] = [];
+        querySnapshot.forEach((doc) => posts.push({ id: doc.id, ...doc.data() } as BlogPost));
+        callback(posts);
     });
-    return posts;
-  } catch (e) {
-    console.error('Error getting blog posts: ', e);
-    return [];
-  }
 }
-
-// Get all blog posts with real-time updates for client-side
-export function getBlogPostsWithUpdates(callback: (posts: BlogPost[]) => void) {
-  const q = query(collection(db, BLOG_POSTS_COLLECTION), orderBy('publishedAt', 'desc'));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const posts: BlogPost[] = [];
-    querySnapshot.forEach((doc) => {
-      posts.push({ id: doc.id, ...doc.data() } as BlogPost);
-    });
-    callback(posts);
-  });
-  return unsubscribe;
-}
-
-// Get a single blog post by its slug for static generation
-export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
-  const q = query(collection(db, BLOG_POSTS_COLLECTION), where("slug", "==", slug));
-  const querySnapshot = await getDocs(q);
-  if (querySnapshot.empty) {
+export async function getBlogPostById(id: string) {
+    const docRef = doc(db, BLOG_POSTS_COLLECTION, id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return { id: docSnap.id, ...docSnap.data() } as BlogPost;
+    }
     return null;
-  }
-  const docSnap = querySnapshot.docs[0];
-  return { id: docSnap.id, ...docSnap.data() } as BlogPost;
 }
-
-// Get a single blog post by its ID for editing
-export async function getBlogPostById(id: string): Promise<BlogPost | null> {
-  const docRef = doc(db, BLOG_POSTS_COLLECTION, id);
-  const docSnap = await getDoc(docRef);
-  if (docSnap.exists()) {
-    return { id: docSnap.id, ...docSnap.data() } as BlogPost;
-  }
-  return null;
-}
-
-// Add a new blog post
 export async function addBlogPost(post: Omit<BlogPost, 'id'>) {
-  try {
     const docRef = await addDoc(collection(db, BLOG_POSTS_COLLECTION), post);
     return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add blog post');
-  }
 }
-
-// Update an existing blog post
 export async function updateBlogPost(id: string, post: Partial<Omit<BlogPost, 'id'>>) {
-  try {
-    const docRef = doc(db, BLOG_POSTS_COLLECTION, id);
-    await updateDoc(docRef, post);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update blog post');
-  }
+    return await updateDoc(doc(db, BLOG_POSTS_COLLECTION, id), post);
 }
-
-// Delete a blog post
 export async function deleteBlogPost(id: string) {
-  try {
-    await deleteDoc(doc(db, BLOG_POSTS_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete blog post');
-  }
+    return await deleteDoc(doc(db, BLOG_POSTS_COLLECTION, id));
 }
-
-
-// --- Cookie Consent Logging ---
-export async function logCookieConsent() {
-  try {
-    await addDoc(collection(db, COOKIE_CONSENT_LOGS_COLLECTION), {
-      consentedAt: Timestamp.now(),
+export async function getFaqItems(callback: (items: FAQItem[]) => void) {
+    const q = query(collection(db, FAQ_COLLECTION));
+    return onSnapshot(q, (querySnapshot) => {
+        const items: FAQItem[] = [];
+        querySnapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() } as FAQItem));
+        callback(items);
     });
-  } catch (e) {
-    console.error('Error logging cookie consent: ', e);
-    throw new Error('Could not log cookie consent');
-  }
 }
-
-export function getCookieConsentLogs(callback: (logs: CookieConsentLog[]) => void) {
-  const q = query(collection(db, COOKIE_CONSENT_LOGS_COLLECTION), orderBy('consentedAt', 'desc'));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const logs: CookieConsentLog[] = [];
-    querySnapshot.forEach((doc) => {
-      logs.push({ id: doc.id, ...doc.data() } as CookieConsentLog);
-    });
-    callback(logs);
-  });
-  return unsubscribe;
-}
-
-// --- FAQ Section ---
-export function getFaqItems(callback: (items: FAQItem[]) => void) {
-  const q = query(collection(db, FAQ_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const items: FAQItem[] = [];
-    querySnapshot.forEach((doc) => {
-      items.push({ id: doc.id, ...doc.data() } as FAQItem);
-    });
-    callback(items);
-  });
-  return unsubscribe;
-}
-
 export async function addFaqItem(item: Omit<FAQItem, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, FAQ_COLLECTION), item);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add FAQ item');
-  }
+  return await addDoc(collection(db, FAQ_COLLECTION), item);
 }
-
 export async function updateFaqItem(id: string, item: Partial<FAQItem>) {
-  try {
-    const docRef = doc(db, FAQ_COLLECTION, id);
-    await updateDoc(docRef, item);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update FAQ item');
-  }
+  return await updateDoc(doc(db, FAQ_COLLECTION, id), item);
 }
-
 export async function deleteFaqItem(id: string) {
-  try {
-    await deleteDoc(doc(db, FAQ_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete FAQ item');
-  }
+  return await deleteDoc(doc(db, FAQ_COLLECTION, id));
 }
-
-// --- Gallery Section ---
-export function getGalleryItems(callback: (items: GalleryItem[]) => void) {
-  const q = query(collection(db, GALLERY_COLLECTION));
-  const unsubscribe = onSnapshot(q, (querySnapshot) => {
-    const items: GalleryItem[] = [];
-    querySnapshot.forEach((doc) => {
-      items.push({ id: doc.id, ...doc.data() } as GalleryItem);
+export async function getGalleryItems(callback: (items: GalleryItem[]) => void) {
+    const q = query(collection(db, GALLERY_COLLECTION));
+    return onSnapshot(q, (querySnapshot) => {
+        const items: GalleryItem[] = [];
+        querySnapshot.forEach((doc) => items.push({ id: doc.id, ...doc.data() } as GalleryItem));
+        callback(items);
     });
-    callback(items);
-  });
-  return unsubscribe;
 }
-
 export async function addGalleryItem(item: Omit<GalleryItem, 'id'>) {
-  try {
-    const docRef = await addDoc(collection(db, GALLERY_COLLECTION), item);
-    return docRef.id;
-  } catch (e) {
-    console.error('Error adding document: ', e);
-    throw new Error('Could not add gallery item');
-  }
+    return await addDoc(collection(db, GALLERY_COLLECTION), item);
 }
-
 export async function updateGalleryItem(id: string, item: Partial<GalleryItem>) {
-  try {
-    const docRef = doc(db, GALLERY_COLLECTION, id);
-    await updateDoc(docRef, item);
-  } catch (e) {
-    console.error('Error updating document: ', e);
-    throw new Error('Could not update gallery item');
-  }
+    return await updateDoc(doc(db, GALLERY_COLLECTION, id), item);
 }
-
 export async function deleteGalleryItem(id: string) {
-  try {
-    await deleteDoc(doc(db, GALLERY_COLLECTION, id));
-  } catch (e) {
-    console.error('Error deleting document: ', e);
-    throw new Error('Could not delete gallery item');
-  }
+    return await deleteDoc(doc(db, GALLERY_COLLECTION, id));
 }
-
-
-// --- Legal Pages (Cookie & Privacy Policy) ---
-
-export function getCookiePolicyContent(callback: (content: CookiePolicyContent | null) => void) {
-  const docRef = doc(db, LEGALPAGE_COLLECTION, COOKIE_POLICY_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    callback(docSnap.exists() ? (docSnap.data() as CookiePolicyContent) : null);
+export async function logCookieConsent() {
+    return await addDoc(collection(db, COOKIE_CONSENT_LOGS_COLLECTION), { consentedAt: Timestamp.now() });
+}
+export async function getCookieConsentLogs(callback: (logs: CookieConsentLog[]) => void) {
+    const q = query(collection(db, COOKIE_CONSENT_LOGS_COLLECTION), orderBy('consentedAt', 'desc'));
+    return onSnapshot(q, (querySnapshot) => {
+        const logs: CookieConsentLog[] = [];
+        querySnapshot.forEach((doc) => logs.push({ id: doc.id, ...doc.data() } as CookieConsentLog));
+        callback(logs);
+    });
+}
+export async function getDestinationPageDestinations(callback: (destinations: Destination[]) => void) {
+  const q = query(collection(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION));
+  return onSnapshot(q, (querySnapshot) => {
+    const destinations: Destination[] = [];
+    querySnapshot.forEach((doc) => destinations.push({ id: doc.id, ...doc.data() } as Destination));
+    callback(destinations);
   });
-  return unsubscribe;
+}
+export async function addDestinationPageDestination(destination: Omit<Destination, 'id'>) {
+    const docRef = await addDoc(collection(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION), destination);
+    return docRef.id;
+}
+export async function updateDestinationPageDestination(id: string, destination: Partial<Destination>) {
+    return await updateDoc(doc(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION, id), destination);
+}
+export async function deleteDestinationPageDestination(id: string) {
+    return await deleteDoc(doc(db, DESTINATION_PAGE_DESTINATIONS_COLLECTION, id));
+}
+export async function getTourPageTours(callback: (tours: Tour[]) => void) {
+    const q = query(collection(db, TOUR_PAGE_TOURS_COLLECTION));
+    return onSnapshot(q, (querySnapshot) => {
+        const tours: Tour[] = [];
+        querySnapshot.forEach((doc) => tours.push({ id: doc.id, ...doc.data() } as Tour));
+        callback(tours);
+    });
+}
+export async function addTourPageTour(tour: Omit<Tour, 'id'>) {
+    const docRef = await addDoc(collection(db, TOUR_PAGE_TOURS_COLLECTION), tour);
+    return docRef.id;
+}
+export async function updateTourPageTour(id: string, tour: Partial<Tour>) {
+    return await updateDoc(doc(db, TOUR_PAGE_TOURS_COLLECTION, id), tour);
+}
+export async function deleteTourPageTour(id: string) {
+    return await deleteDoc(doc(db, TOUR_PAGE_TOURS_COLLECTION, id));
 }
 
-export async function updateCookiePolicyContent(content: CookiePolicyContent) {
-  try {
-    const docRef = doc(db, LEGALPAGE_COLLECTION, COOKIE_POLICY_DOC);
-    await setDoc(docRef, content, { merge: true });
-  } catch (e) {
-    console.error('Error updating cookie policy: ', e);
-    throw new Error('Could not update cookie policy');
-  }
-}
-
-export function getPrivacyPolicyContent(callback: (content: PrivacyPolicyContent | null) => void) {
-  const docRef = doc(db, LEGALPAGE_COLLECTION, PRIVACY_POLICY_DOC);
-  const unsubscribe = onSnapshot(docRef, (docSnap) => {
-    callback(docSnap.exists() ? (docSnap.data() as PrivacyPolicyContent) : null);
-  });
-  return unsubscribe;
-}
-
-export async function updatePrivacyPolicyContent(content: PrivacyPolicyContent) {
-  try {
-    const docRef = doc(db, LEGALPAGE_COLLECTION, PRIVACY_POLICY_DOC);
-    await setDoc(docRef, content, { merge: true });
-  } catch (e) {
-    console.error('Error updating privacy policy: ', e);
-    throw new Error('Could not update privacy policy');
-  }
-}
+// --- SSG Read Functions ---
+export const getSlidesForPreload = () => fetchFirestoreCollection(SLIDES_COLLECTION) as Promise<HeroSlide[]>;
+export const getWelcomeSectionContent = () => fetchFirestoreDoc(`${HOMEPAGE_COLLECTION}/${WELCOME_SECTION_DOC}`) as Promise<WelcomeSectionContent | null>;
+export const getHomepageSectionTitles = () => fetchFirestoreDoc(`${HOMEPAGE_COLLECTION}/${HOMEPAGE_SECTION_TITLES_DOC}`) as Promise<HomepageSectionTitles | null>;
+export const getSsgDestinations = () => fetchFirestoreCollection(DESTINATIONS_COLLECTION) as Promise<Destination[]>;
+export const getSsgTours = () => fetchFirestoreCollection(TOURS_COLLECTION) as Promise<Tour[]>;
+export const getSsgServices = () => fetchFirestoreCollection(SERVICES_COLLECTION) as Promise<Service[]>;
+export const getAboutHeroContent = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_HERO_DOC}`) as Promise<AboutHeroContent | null>;
+export const getAboutSectionTitles = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${ABOUT_SECTION_TITLES_DOC}`) as Promise<AboutSectionTitles | null>;
+export const getMissionVisionContent = () => fetchFirestoreDoc(`${ABOUTPAGE_COLLECTION}/${MISSION_VISION_DOC}`) as Promise<MissionVisionContent | null>;
+export const getSsgWhyChooseUsItems = () => fetchFirestoreCollection(WHY_CHOOSE_US_COLLECTION) as Promise<WhyChooseUsItem[]>;
+export const getSsgTestimonials = () => fetchFirestoreCollection(TESTIMONIALS_COLLECTION) as Promise<Testimonial[]>;
+export const getBlogPosts = () => fetchFirestoreCollection(BLOG_POSTS_COLLECTION) as Promise<BlogPost[]>;
+export const getBlogPostBySlug = async (slug: string): Promise<BlogPost | null> => {
+    const posts = await getBlogPosts();
+    const post = posts.find(p => p.slug === slug);
+    return post ? { ...post, publishedAt: new Date(post.publishedAt) } : null;
+};
+export const getFaqPageHeroContent = () => fetchFirestoreDoc(`${FAQPAGE_COLLECTION}/${FAQ_PAGE_HERO_DOC}`) as Promise<FaqPageHeroContent | null>;
+export const getSsgFaqItems = () => fetchFirestoreCollection(FAQ_COLLECTION) as Promise<FAQItem[]>;
+export const getGalleryPageHeroContent = () => fetchFirestoreDoc(`${GALLERYPAGE_COLLECTION}/${GALLERY_PAGE_HERO_DOC}`) as Promise<GalleryPageHeroContent | null>;
+export const getSsgGalleryItems = () => fetchFirestoreCollection(GALLERY_COLLECTION) as Promise<GalleryItem[]>;
+export const getContactPageHeroContent = () => fetchFirestoreDoc(`${CONTACTPAGE_COLLECTION}/${CONTACT_PAGE_HERO_DOC}`) as Promise<ContactPageHeroContent | null>;
+export const getContactPageDetailsContent = () => fetchFirestoreDoc(`${CONTACTPAGE_COLLECTION}/${CONTACT_DETAILS_DOC}`) as Promise<ContactPageDetailsContent | null>;
+export const getServicePageHeroContent = () => fetchFirestoreDoc(`${SERVICEPAGE_COLLECTION}/${SERVICE_PAGE_HERO_DOC}`) as Promise<ServicePageHeroContent | null>;
+export const getServicePageIntroContent = () => fetchFirestoreDoc(`${SERVICEPAGE_COLLECTION}/${SERVICE_PAGE_INTRO_DOC}`) as Promise<ServicePageIntroContent | null>;
+export const getSsgServicePageServices = () => fetchFirestoreCollection(SERVICE_PAGE_SERVICES_COLLECTION) as Promise<Service[]>;
+export const getDestinationPageHeroContent = () => fetchFirestoreDoc(`${DESTINATIONPAGE_COLLECTION}/${DESTINATION_PAGE_HERO_DOC}`) as Promise<DestinationPageHeroContent | null>;
+export const getDestinationPageIntroContent = () => fetchFirestoreDoc(`${DESTINATIONPAGE_COLLECTION}/${DESTINATION_PAGE_INTRO_DOC}`) as Promise<DestinationPageIntroContent | null>;
+export const getSsgDestinationPageDestinations = () => fetchFirestoreCollection(DESTINATION_PAGE_DESTINATIONS_COLLECTION) as Promise<Destination[]>;
+export const getDestinationPageDestinationById = (id: string) => fetchFirestoreDoc(`${DESTINATION_PAGE_DESTINATIONS_COLLECTION}/${id}`) as Promise<Destination | null>;
+export const getTourPageHeroContent = () => fetchFirestoreDoc(`${TOURPAGE_COLLECTION}/${TOUR_PAGE_HERO_DOC}`) as Promise<TourPageHeroContent | null>;
+export const getTourPageIntroContent = () => fetchFirestoreDoc(`${TOURPAGE_COLLECTION}/${TOUR_PAGE_INTRO_DOC}`) as Promise<TourPageIntroContent | null>;
+export const getSsgTourPageTours = () => fetchFirestoreCollection(TOUR_PAGE_TOURS_COLLECTION) as Promise<Tour[]>;
+export const getTourPageTourById = (id: string) => fetchFirestoreDoc(`${TOUR_PAGE_TOURS_COLLECTION}/${id}`) as Promise<Tour | null>;
+export const getPrivacyPolicyContent = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${PRIVACY_POLICY_DOC}`) as Promise<PrivacyPolicyContent | null>;
+export const getCookiePolicyContent = () => fetchFirestoreDoc(`${LEGALPAGE_COLLECTION}/${COOKIE_POLICY_DOC}`) as Promise<CookiePolicyContent | null>;

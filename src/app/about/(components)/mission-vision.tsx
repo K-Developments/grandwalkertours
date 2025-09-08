@@ -1,47 +1,19 @@
 // src/app/about/(components)/mission-vision.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Image from 'next/image';
-import { getMissionVisionContent, getAboutSectionTitles } from '@/lib/firebase/firestore';
 import type { MissionVisionContent, AboutSectionTitles } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
-const MissionVisionSection = () => {
+type MissionVisionSectionProps = {
+    content: MissionVisionContent | null;
+    titles: AboutSectionTitles | null;
+}
+
+const MissionVisionSection = ({ content, titles }: MissionVisionSectionProps) => {
   const [activeTab, setActiveTab] = useState<'mission' | 'vision'>('mission');
-  const [content, setContent] = useState<MissionVisionContent | null>(null);
-  const [titles, setTitles] = useState<AboutSectionTitles | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribeContent = getMissionVisionContent((data) => {
-      setContent(data);
-      if (titles) setLoading(false);
-    });
-    const unsubscribeTitles = getAboutSectionTitles((data) => {
-        setTitles(data);
-        if (content) setLoading(false);
-    });
-
-    return () => {
-        unsubscribeContent();
-        unsubscribeTitles();
-    }
-  }, [content, titles]);
-
-  if (loading) {
-    return (
-      <section className="py-8 md:py-12 bg-card">
-        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3">
-          <Skeleton className="h-[500px]" />
-          <Skeleton className="h-[500px]" />
-          <Skeleton className="h-[500px]" />
-        </div>
-      </section>
-    )
-  }
 
   if (!content) return null;
 

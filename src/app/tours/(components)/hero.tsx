@@ -1,35 +1,17 @@
 // src/app/tours/(components)/hero.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getTourPageHeroContent } from '@/lib/firebase/firestore';
 import type { TourPageHeroContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
-const ToursHero = () => {
-  const [content, setContent] = useState<TourPageHeroContent | null>(null);
-  const [loading, setLoading] = useState(true);
+type ToursHeroProps = {
+    content: TourPageHeroContent | null;
+}
 
-  useEffect(() => {
-    const unsubscribe = getTourPageHeroContent((data) => {
-      setContent(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
+const ToursHero = ({ content }: ToursHeroProps) => {
   const heroImage = content?.image || 'https://placehold.co/1920x400.png';
   const imageHint = content?.imageHint || 'adventure travel collage';
-
-  if (loading) {
-    return (
-       <section className="relative h-[60vh] md:h-[120vh] w-full bg-muted">
-         <Skeleton className="w-full h-full" />
-       </section>
-    );
-  }
 
   return (
     <section className="relative h-[60vh] md:h-[120vh] w-full bg-black">

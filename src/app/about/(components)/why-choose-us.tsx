@@ -1,49 +1,20 @@
 // src/app/about/(components)/why-choose-us.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getWhyChooseUsItems, getAboutSectionTitles } from '@/lib/firebase/firestore';
 import type { WhyChooseUsItem, AboutSectionTitles } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { ArrowRight } from 'lucide-react';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
 
-const WhyChooseUsSection = () => {
-  const [items, setItems] = useState<WhyChooseUsItem[]>([]);
-  const [titles, setTitles] = useState<AboutSectionTitles | null>(null);
-  const [loading, setLoading] = useState(true);
+type WhyChooseUsSectionProps = {
+    items: WhyChooseUsItem[];
+    titles: AboutSectionTitles | null;
+}
 
-  useEffect(() => {
-    const unsubscribeItems = getWhyChooseUsItems((data) => {
-      setItems(data);
-      if(titles) setLoading(false);
-    });
-    const unsubscribeTitles = getAboutSectionTitles((data) => {
-        setTitles(data);
-        if(items.length > 0 || data) setLoading(false);
-    });
-
-    return () => {
-        unsubscribeItems();
-        unsubscribeTitles();
-    };
-  }, [items.length, titles]);
-
-  if (loading) {
-    return (
-      <section className="py-8 bg-background">
-        <div className="container mx-auto px-4 space-y-16">
-          <Skeleton className="h-96 w-full" />
-          <Skeleton className="h-96 w-full" />
-        </div>
-      </section>
-    );
-  }
-
+const WhyChooseUsSection = ({ items, titles }: WhyChooseUsSectionProps) => {
   if (items.length === 0) {
     return null;
   }

@@ -3,66 +3,25 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getDestinationPageDestinations, getDestinationPageIntroContent } from '@/lib/firebase/firestore';
 import type { Destination, DestinationPageIntroContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 
 type DestinationsListProps = {
+  destinations: Destination[];
+  intro: DestinationPageIntroContent | null;
   onDestinationSelect: (id: string, name: string) => void;
 };
 
-const DestinationsList = ({ onDestinationSelect }: DestinationsListProps) => {
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [intro, setIntro] = useState<DestinationPageIntroContent | null>(null);
-  const [loading, setLoading] = useState(true);
+const DestinationsList = ({ destinations, intro, onDestinationSelect }: DestinationsListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  useEffect(() => {
-    const fetchContent = async () => {
-        const unsubscribeDestinations = getDestinationPageDestinations((data) => {
-            setDestinations(data);
-            // We set loading false after both fetches are initiated.
-        });
-
-        const unsubscribeIntro = getDestinationPageIntroContent((data) => {
-            setIntro(data);
-        });
-        
-        // This is a simple way to remove the loading state. 
-        // A more robust solution might use Promise.all if the fetch functions returned promises.
-        setLoading(false);
-
-        return () => {
-            unsubscribeDestinations();
-            unsubscribeIntro();
-        };
-    }
-    fetchContent();
-  }, []);
-  
   const filteredDestinations = destinations.filter(destination => 
     destination.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     destination.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-
-  if (loading) {
-    return (
-      <section className="py-12 md:py-24 bg-background">
-        <div className="container mx-auto px-4 grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {[...Array(2)].map((_, i) => (
-            <div key={i} className="w-full">
-              <Skeleton className="h-[550px] w-full" />
-            </div>
-          ))}
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="py-12 md:py-24 bg-background overflow-hidden">

@@ -1,35 +1,17 @@
 // src/app/about/(components)/hero.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getAboutHeroContent } from '@/lib/firebase/firestore';
 import type { AboutHeroContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
-const AboutHero = () => {
-  const [content, setContent] = useState<AboutHeroContent | null>(null);
-  const [loading, setLoading] = useState(true);
+type AboutHeroProps = {
+  content: AboutHeroContent | null;
+}
 
-  useEffect(() => {
-    const unsubscribe = getAboutHeroContent((data) => {
-      setContent(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
+const AboutHero = ({ content }: AboutHeroProps) => {
   const heroImage = content?.image || 'https://placehold.co/1920x400.png';
   const imageHint = content?.imageHint || 'travel company office';
-
-  if (loading) {
-    return (
-       <section className="relative md:h-[60vh] h-[120vh] w-full bg-muted">
-         <Skeleton className="w-full h-full" />
-       </section>
-    );
-  }
 
   return (
     <section className="relative h-[60vh] md:h-[120vh] w-full bg-black">

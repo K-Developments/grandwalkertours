@@ -1,35 +1,17 @@
 // src/app/faq/(components)/hero.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getFaqPageHeroContent } from '@/lib/firebase/firestore';
 import type { FaqPageHeroContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
-const FaqHero = () => {
-  const [content, setContent] = useState<FaqPageHeroContent | null>(null);
-  const [loading, setLoading] = useState(true);
+type FaqHeroProps = {
+    content: FaqPageHeroContent | null;
+}
 
-  useEffect(() => {
-    const unsubscribe = getFaqPageHeroContent((data) => {
-      setContent(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
+const FaqHero = ({ content }: FaqHeroProps) => {
   const heroImage = content?.image || 'https://placehold.co/1920x400.png';
   const imageHint = content?.imageHint || 'questions marks illustration';
-
-  if (loading) {
-    return (
-       <section className="relative h-[60vh] md:h-[120vh] w-full bg-muted">
-         <Skeleton className="w-full h-full" />
-       </section>
-    );
-  }
 
   return (
     <section className="relative h-[60vh] md:h-[120vh] w-full bg-black">

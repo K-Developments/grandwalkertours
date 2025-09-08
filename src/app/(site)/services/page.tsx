@@ -4,16 +4,23 @@ import Link from 'next/link';
 import ServicesHero from '@/app/services/(components)/hero';
 import ServiceIntroSection from '@/app/services/(components)/intro';
 import ServicesList from '@/app/services/(components)/services-list';
+import { getServicePageHeroContent, getServicePageIntroContent, getSsgServicePageServices } from '@/lib/firebase/firestore';
+
+export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Our Services',
   description: 'Explore the wide range of bespoke services offered by Grand Walker Tours. From personalized tour planning to luxury accommodations, we cater to every aspect of your journey.',
 }
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const heroContent = await getServicePageHeroContent();
+  const introContent = await getServicePageIntroContent();
+  const services = await getSsgServicePageServices();
+
   return (
     <>
-      <ServicesHero />
+      <ServicesHero content={heroContent} />
       <div className="container mx-auto px-4 py-4">
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -31,8 +38,8 @@ export default function ServicesPage() {
             </ol>
           </nav>
       </div>
-      <ServiceIntroSection />
-      <ServicesList />
+      <ServiceIntroSection content={introContent} />
+      <ServicesList services={services} />
     </>
   );
 }

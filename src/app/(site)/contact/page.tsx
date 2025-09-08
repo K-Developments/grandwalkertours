@@ -4,16 +4,22 @@ import Link from 'next/link';
 import ContactHero from '@/app/contact/(components)/hero';
 import ContactFormSection from '@/app/contact/(components)/contact-form-section';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
+import { getContactPageHeroContent, getContactPageDetailsContent } from '@/lib/firebase/firestore';
+
+export const dynamic = 'force-static';
 
 export const metadata: Metadata = {
   title: 'Contact Us',
   description: 'Get in touch with Grand Walker Tours. We are here to answer your questions and help you plan your next unforgettable journey. Reach out to us via phone, email, or our contact form.',
 }
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const heroContent = await getContactPageHeroContent();
+  const detailsContent = await getContactPageDetailsContent();
+
   return (
     <>
-      <ContactHero />
+      <ContactHero content={heroContent} />
       <div className="container mx-auto px-4 py-4">
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
@@ -32,7 +38,7 @@ export default function ContactPage() {
           </nav>
       </div>
       <MotionWrapper>
-        <ContactFormSection />
+        <ContactFormSection content={detailsContent} />
       </MotionWrapper>
     </>
   );

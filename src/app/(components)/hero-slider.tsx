@@ -5,9 +5,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Carousel, type CarouselApi, CarouselContent, CarouselItem } from '@/components/ui/carousel';
 import Autoplay from "embla-carousel-autoplay";
-import { getSlides } from '@/lib/firebase/firestore';
 import type { HeroSlide } from '@/lib/types';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -17,15 +17,6 @@ const containerVariants = {
       staggerChildren: 0.2, 
       delayChildren: 0.1,
     },
-  },
-};
-
-const textSlideUp = {
-  hidden: { y: "100%", opacity: 0 },
-  visible: { 
-    y: 0,
-    opacity: 1,
-    transition: { duration: 0.7, ease: [0.6, 0.01, 0.05, 0.95] } 
   },
 };
 
@@ -59,28 +50,24 @@ const imageVariants = {
     },
 };
 
-export default function HeroSlider() {
+type HeroSliderProps = {
+  slides: HeroSlide[];
+};
+
+export default function HeroSlider({ slides }: HeroSliderProps) {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const [slides, setSlides] = useState<HeroSlide[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showVideo, setShowVideo] = useState(false);
   const autoplayRef = useRef<ReturnType<typeof Autoplay> | null>(null);
 
   const introVideoUrl = slides.length > 0 && slides[0].videoUrl ? slides[0].videoUrl : null;
 
   useEffect(() => {
-    // Initialize autoplay only once
     autoplayRef.current = Autoplay({ delay: 5000, stopOnInteraction: true });
     
-    const unsubscribe = getSlides((data) => {
-      setSlides(data);
-      const firstSlideHasVideo = data.length > 0 && !!data[0].videoUrl;
-      setShowVideo(firstSlideHasVideo);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
+    const firstSlideHasVideo = slides.length > 0 && !!slides[0].videoUrl;
+    setShowVideo(firstSlideHasVideo);
+  }, [slides]);
   
   useEffect(() => {
     if (!api) return;
@@ -101,7 +88,6 @@ export default function HeroSlider() {
   useEffect(() => {
     if (!showVideo && api && autoplayRef.current) {
       try {
-        // Reset the autoplay plugin
         api.reInit({ plugins: [autoplayRef.current] });
       } catch (e) {
         console.warn("Autoplay initialization failed", e);
@@ -124,20 +110,10 @@ export default function HeroSlider() {
     }
   };
 
-  if (loading) {
-    return (
-      <section className="relative !h-[50vh] md:h-screen w-full flex items-center justify-center">
-        <div className="text-center text-primary">
-          <h2 className="text-2xl font-bold">Grand Walker Tours</h2>
-        </div>
-      </section>
-    );
-  }
-
   if (slides.length === 0) {
     return (
-      <section className="relative h-[60vh] md:h-screen w-full flex items-center justify-center">
-        <div className="text-center text-black">
+      <section className="relative h-[60vh] md:h-screen w-full flex items-center justify-center bg-muted">
+        <div className="text-center text-foreground">
           <h2 className="text-2xl font-bold">No slides available.</h2>
           <p>Please add slides in the admin dashboard.</p>
         </div>
@@ -148,6 +124,7 @@ export default function HeroSlider() {
   const currentSlide = slides[current];
 
   return (
+    <>
     <section 
       id="home" 
       className="relative h-[50vh] md:h-screen w-full overflow-hidden"
@@ -177,7 +154,6 @@ export default function HeroSlider() {
               </CarouselContent>
           </Carousel>
 
-          {/* Background Images & Content */}
           <AnimatePresence>
             {currentSlide && (
                 <motion.div
@@ -198,81 +174,53 @@ export default function HeroSlider() {
                         sizes="100vw"
                         quality={95}
                     />
-                    <div className="absolute inset-0  z-10" />
+                    <div className="absolute inset-0 bg-black/30 z-10" />
                 </motion.div>
             )}
           </AnimatePresence>
         </>
       )}
 
-      {/* Bottom Content Container */}
-      <div className="absolute bottom-0 left-0 right-0 z-20 bg-transparent">
-        <div className="flex justify-center px-4 py-4 md:py-8">
-          {/* Content Div - 60% width */}
-          <div className="w-full md:max-w-[60%]">
-            <AnimatePresence mode="wait">
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        <div className="container mx-auto px-4 py-8 flex justify-end">
+           <AnimatePresence mode="wait">
               <motion.div 
                 key={current}
                 initial="hidden"
                 animate="visible"
                 exit="hidden"
                 variants={containerVariants}
-                className="grid md:grid-cols-2  grid-col-1 items-center  text-white "
+                className="w-full md:w-1/2 text-right"
               >
-                {/* Left Side - Quote */}
-                <div className="overflow-hidden border-r-2 border-white text-white hidden md:block">
-                  <motion.div 
-                    className="text-right mr-5 md:display-block display-none"
-                    variants={slideFromLeft}
-                  >
-                    <p className="text-sm md:text-base lg:text-lg font-light italic text-white ">
-                      "Discover the extraordinary"
-                    </p>
-                    <p className="text-xs md:text-sm opacity-70 mt-1">
-                      - Grand Walker Tours
-                    </p>
-                  </motion.div>
-                </div>
-
-              
-
-                {/* Right Side - Title */}
-                <div className="overflow-hidden">
-                  <motion.h1 
-                    className="font-headline font-light text-3xl md:text-3xl lg:text-5xl tracking-tight text-left ml-5"
-                    variants={slideFromRight}
-                  >
-                    {currentSlide?.headline}
-                  </motion.h1>
-                </div>
+                  <div className="overflow-hidden">
+                    <motion.h1 
+                        className="font-headline font-light text-white hero-headline-right"
+                        variants={slideFromRight}
+                    >
+                        {currentSlide?.headline}
+                    </motion.h1>
+                  </div>
               </motion.div>
             </AnimatePresence>
-          </div>
         </div>
       </div>
-
-      {/* Scroll Down Indicator */}
-      {!showVideo && (
-        <a 
-          href="#welcome" 
-          aria-label="Scroll to next section" 
-          className="absolute bottom-4 md:bottom-8 right-8 z-20 opacity-70 hover:opacity-100 transition-opacity"
-        >
-          <div className="w-8 h-16 text-white">
-            <svg width="100%" height="100%" viewBox="0 0 24 64">
-              <motion.path
-                d="M 12 0 V 60 L 18 54 M 12 60 L 6 54"
-                stroke="currentColor"
-                strokeWidth="2"
-                fill="none"
-                initial={{ pathLength: 0, opacity: 0 }}
-                animate={{ pathLength: 1, opacity: 1 }}
-                transition={{ duration: 1.5, repeat: Infinity, repeatType: 'loop', ease: 'easeInOut' }}
-              />
-            </svg>
-          </div>
-        </a>
-      )}
     </section>
+
+    <div className="bg-[#FAFAFA] py-4 md:hidden">
+        <div className="container mx-auto px-4 flex justify-center items-center gap-4">
+            {slides.map((_, index) => (
+                <button
+                    key={index}
+                    onClick={() => api?.scrollTo(index)}
+                    className={cn(
+                        "h-2.5 w-2.5 rounded-full transition-colors",
+                        index === current ? "bg-primary" : "bg-muted-foreground/50"
+                    )}
+                    aria-label={`Go to slide ${index + 1}`}
+                />
+            ))}
+        </div>
+    </div>
+    </>
   );
 }

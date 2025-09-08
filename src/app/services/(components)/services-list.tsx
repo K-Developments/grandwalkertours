@@ -1,45 +1,17 @@
 // src/app/services/(components)/services-list.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getServicePageServices } from '@/lib/firebase/firestore';
 import type { Service } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import MotionWrapper from '@/app/(components)/motion-wrapper';
 import { Button } from '@/components/ui/button';
 
-const ServicesList = () => {
-  const [services, setServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
+type ServicesListProps = {
+    services: Service[];
+}
 
-  useEffect(() => {
-    const unsubscribe = getServicePageServices((data) => {
-      setServices(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  if (loading) {
-    return (
-      <section className="py-12 md:py-24 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="h-[500px] w-full" />
-                <Skeleton className="h-8 w-3/4" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-10 w-32" />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+const ServicesList = ({ services }: ServicesListProps) => {
 
   if (services.length === 0) {
     return null; // Or a message indicating no services are available

@@ -1,23 +1,9 @@
 // src/app/homepage-components/welcome-section.tsx
-'use client';
-
-import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getWelcomeSectionContent } from '@/lib/firebase/firestore';
 import type { WelcomeSectionContent as WelcomeSectionContentType } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-
-const isValidUrl = (url?: string): boolean => {
-  if (!url) return false;
-  try {
-    // A simple check is sufficient here to avoid crashes from malformed strings.
-    return url.startsWith('http://') || url.startsWith('https://');
-  } catch (_) {
-    return false;
-  }
-};
 
 const WelcomePart = ({
   headline,
@@ -36,87 +22,54 @@ const WelcomePart = ({
   buttonLink?: string;
   imagePosition?: 'left' | 'right';
 }) => {
-
   if (!headline && !description && !image) {
     return null;
   }
   
-  const showImage = isValidUrl(image);
   const imageOrderClass = imagePosition === 'right' ? 'md:order-2' : 'md:order-1';
   const contentOrderClass = imagePosition === 'right' ? 'md:order-1' : 'md:order-2';
 
   return (
-     <section 
-      className="grid grid-cols-1 md:grid-cols-2 bg-background text-foreground overflow-hidden"
-    >
-        {/* Content Column */}
-        <div className={`flex items-center justify-center p-8 md:p-16 bg-[#F5F5F5] ${contentOrderClass}`}>
-            <div className="max-w-md text-center md:text-left">
-                 <h2 className="font-headline text-3xl md:text-4xl font-extralight uppercase text-black">
-                    {headline}
-                </h2>
-                <p className="mt-4 text-base md:text-lg text-muted-foreground">
-                    {description}
-                </p>
-                {buttonText && buttonLink && (
-                    <Button variant="default" className="mt-8" size="lg" asChild>
-                    <Link href={buttonLink}>{buttonText}</Link>
-                    </Button>
-                )}
-            </div>
+    <section className="grid grid-cols-1 md:grid-cols-2 bg-background text-foreground overflow-hidden">
+      <div className={`flex items-center justify-center p-8 md:p-16 bg-[#F5F5F5] ${contentOrderClass}`}>
+        <div className="max-w-md text-center md:text-left">
+          <h2 className="font-headline text-3xl md:text-4xl font-extralight uppercase text-black">
+            {headline}
+          </h2>
+          <p className="mt-4 text-base md:text-lg text-muted-foreground">
+            {description}
+          </p>
+          {buttonText && buttonLink && (
+            <Button variant="default" className="mt-8" size="lg" asChild>
+              <Link href={buttonLink}>{buttonText}</Link>
+            </Button>
+          )}
         </div>
-
-        {/* Image Column */}
-        <div className={`w-full h-[70vh] md:h-auto relative ${imageOrderClass}`}>
-            {showImage && image && (
-                <>
-                  <Image
-                      src={image}
-                      alt={headline || 'Welcome section image'}
-                      fill
-                      className="object-cover"
-                      data-ai-hint={imageHint}
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                  />
-                  <div className="absolute inset-4 border-2 border-white/80 pointer-events-none"></div>
-                </>
-            )}
-        </div>
+      </div>
+      <div className={`w-full h-[70vh] md:h-auto relative ${imageOrderClass}`}>
+        {image && (
+          <>
+            <Image
+              src={image}
+              alt={headline || 'Welcome section image'}
+              fill
+              className="object-cover"
+              data-ai-hint={imageHint}
+              sizes="(max-width: 768px) 100vw, 50vw"
+            />
+            <div className="absolute inset-4 border-2 border-white/80 pointer-events-none"></div>
+          </>
+        )}
+      </div>
     </section>
-  )
+  );
+};
 
-}
+type WelcomeSectionProps = {
+    content: WelcomeSectionContentType | null;
+};
 
-
-export default function WelcomeSection() {
-  const [content, setContent] = useState<WelcomeSectionContentType | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = getWelcomeSectionContent((data) => {
-      setContent(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  if (loading) {
-    return (
-      <section id="welcome" className="flex flex-col md:flex-row min-h-[60vh]">
-          <div className="w-full md:w-1/2 flex items-center justify-center p-8">
-             <div className="w-full max-w-md space-y-4">
-                <Skeleton className="h-12 w-3/4" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-12 w-32" />
-             </div>
-          </div>
-           <div className="w-full md:w-1/2">
-             <Skeleton className="h-full w-full min-h-[40vh]" />
-          </div>
-      </section>
-    );
-  }
-
+export default function WelcomeSection({ content }: WelcomeSectionProps) {
   if (!content) {
      return (
       <section id="welcome" className="py-16 md:py-24 bg-muted pt-[5rem]">

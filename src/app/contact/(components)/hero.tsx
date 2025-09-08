@@ -1,35 +1,17 @@
 // src/app/contact/(components)/hero.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getContactPageHeroContent } from '@/lib/firebase/firestore';
 import type { ContactPageHeroContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { motion } from 'framer-motion';
 
-const ContactHero = () => {
-  const [content, setContent] = useState<ContactPageHeroContent | null>(null);
-  const [loading, setLoading] = useState(true);
+type ContactHeroProps = {
+  content: ContactPageHeroContent | null;
+}
 
-  useEffect(() => {
-    const unsubscribe = getContactPageHeroContent((data) => {
-      setContent(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
+const ContactHero = ({ content }: ContactHeroProps) => {
   const heroImage = content?.image || 'https://placehold.co/1920x400.png';
   const imageHint = content?.imageHint || 'contact center call';
-
-  if (loading) {
-    return (
-       <section className="relative h-[60vh] w-full bg-muted">
-         <Skeleton className="w-full h-full" />
-       </section>
-    );
-  }
 
   return (
     <section className="relative h-[60vh] w-full bg-black">

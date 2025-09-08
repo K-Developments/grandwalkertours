@@ -1,7 +1,6 @@
 // src/app/contact/(components)/contact-form-section.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,9 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { toast } from '@/hooks/use-toast';
 import { Loader2, Mail, MapPin, Phone } from 'lucide-react';
 import Image from 'next/image';
-import { getContactPageDetailsContent } from '@/lib/firebase/firestore';
 import type { ContactPageDetailsContent } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
@@ -39,18 +36,11 @@ const ContactInfoItem = ({ icon: Icon, title, children }: { icon: React.ElementT
     </div>
 );
 
-export default function ContactFormSection() {
-  const [content, setContent] = useState<ContactPageDetailsContent | null>(null);
-  const [loading, setLoading] = useState(true);
+type ContactFormSectionProps = {
+    content: ContactPageDetailsContent | null;
+}
 
-  useEffect(() => {
-    const unsubscribe = getContactPageDetailsContent((data) => {
-      setContent(data);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
-  
+export default function ContactFormSection({ content }: ContactFormSectionProps) {
   const form = useForm<ContactFormValues>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: { name: "", email: "", country: "", phone: "", subject: "", message: "" },
@@ -180,21 +170,7 @@ export default function ContactFormSection() {
         </div>
 
         {/* Contact Info and Image */}
-        {loading ? (
-             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-                <div className="space-y-4">
-                    <Skeleton className="h-10 w-3/4" />
-                    <Skeleton className="h-4 w-full" />
-                    <Skeleton className="h-4 w-5/6" />
-                    <div className="pt-8 space-y-6">
-                        <Skeleton className="h-16 w-full" />
-                        <Skeleton className="h-16 w-full" />
-                        <Skeleton className="h-16 w-full" />
-                    </div>
-                </div>
-                <Skeleton className="h-80 md:h-96 w-full" />
-             </div>
-        ) : content ? (
+        {content ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             <div className="space-y-8">
                 <div>

@@ -3,44 +3,18 @@
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
-import { getServices, getHomepageSectionTitles } from '@/lib/firebase/firestore';
 import type { Service, HomepageSectionTitles } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
 
-export default function ServicesSection() {
-  const [services, setServices] = useState<Service[]>([]);
-  const [titles, setTitles] = useState<HomepageSectionTitles | null>(null);
-  const [loading, setLoading] = useState(true);
+type ServicesSectionProps = {
+  services: Service[];
+  titles: HomepageSectionTitles | null;
+}
+
+export default function ServicesSection({ services, titles }: ServicesSectionProps) {
   const [activeIndex, setActiveIndex] = useState(0);
-
-  useEffect(() => {
-    const unsubscribeServices = getServices((data) => {
-      setServices(data);
-      if (titles) setLoading(false);
-    });
-     const unsubscribeTitles = getHomepageSectionTitles((data) => {
-        setTitles(data);
-        if (services.length > 0 || data) setLoading(false);
-    });
-    return () => {
-        unsubscribeServices();
-        unsubscribeTitles();
-    };
-  }, [services.length, titles]);
-
-  if (loading) {
-    return (
-      <section id="services" className="py-16 md:py-24 bg-card text-foreground">
-        <div className="container mx-auto px-4">
-           <Skeleton className="h-10 w-1/2 mx-auto mb-12" />
-           <Skeleton className="h-[70vh] w-full" />
-        </div>
-      </section>
-    );
-  }
 
   if (services.length === 0) {
     return null;
