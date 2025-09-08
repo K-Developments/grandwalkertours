@@ -28,7 +28,7 @@ export default async function ToursPage({ searchParams }: { searchParams: { tour
 
     const heroContent = await getTourPageHeroContent();
     const introContent = await getTourPageIntroContent();
-    const tours = await getSsgTourPageTours();
+    const tours = await getSsgTourPageTours() || [];
     const { name: tourName, detail: tourDetail } = await getTourData(tourId);
     
     return (
@@ -36,7 +36,7 @@ export default async function ToursPage({ searchParams }: { searchParams: { tour
             <ToursPageClient
                 heroContent={heroContent}
                 introContent={introContent}
-                tours={tours || []}
+                tours={tours}
                 initialTourId={tourId}
                 initialTourName={tourName}
                 initialTourDetail={tourDetail}
