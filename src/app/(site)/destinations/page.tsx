@@ -1,6 +1,6 @@
 // src/app/destinations/page.tsx
 import DestinationsPageClient from './destinations-page-client';
-import { getDestinationPageHeroContent, getDestinationPageIntroContent, getSsgDestinationPageDestinations, getDestinationPageDestinationById } from '@/lib/firebase/firestore';
+import { getDestinationPageHeroContentSSG, getDestinationPageIntroContentSSG, getSsgDestinationPageDestinations, getDestinationPageDestinationById } from '@/lib/firebase/firestore';
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 
@@ -25,8 +25,9 @@ async function getDestinationData(destinationId?: string) {
 export default async function DestinationsPage({ searchParams }: { searchParams: { destinationId?: string } }) {
     const { destinationId } = searchParams;
 
-    const heroContent = await getDestinationPageHeroContent();
-    const introContent = await getDestinationPageIntroContent();
+    // Await all data fetching promises
+    const heroContent = await getDestinationPageHeroContentSSG();
+    const introContent = await getDestinationPageIntroContentSSG();
     const destinations = await getSsgDestinationPageDestinations() || [];
     const { name: destinationName, detail: destinationDetail } = await getDestinationData(destinationId);
     
