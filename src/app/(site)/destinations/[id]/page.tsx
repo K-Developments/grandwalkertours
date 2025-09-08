@@ -1,9 +1,10 @@
 // src/app/(site)/destinations/[id]/page.tsx
-import { getSsgDestinationPageDestinations, getDestinationPageDestinationById } from '@/lib/firebase/firestore';
+import { getSsgDestinationPageDestinations, getDestinationPageDestinationById, getDestinationPageHeroContentSSG } from '@/lib/firebase/firestore';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import DestinationDetailView from '@/app/destinations/(components)/destination-detail-view';
 import Link from 'next/link';
+import DestinationsHero from '@/app/destinations/(components)/hero';
 
 export const dynamic = 'force-static';
 
@@ -48,6 +49,7 @@ export async function generateStaticParams() {
 
 export default async function DestinationDetailPage({ params }: { params: { id: string }}) {
   const destination = await getDestinationPageDestinationById(params.id);
+  const heroContent = await getDestinationPageHeroContentSSG();
 
   if (!destination) {
     notFound();
@@ -55,6 +57,7 @@ export default async function DestinationDetailPage({ params }: { params: { id: 
 
   return (
     <>
+       <DestinationsHero content={heroContent} />
        <div className="container mx-auto px-4 py-4">
           <nav className="flex" aria-label="Breadcrumb">
             <ol className="inline-flex items-center space-x-1 md:space-x-3">
