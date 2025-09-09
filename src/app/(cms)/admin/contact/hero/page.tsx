@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getContactPageHeroContent, updateContactPageHeroContent } from '@/lib/firebase/firestore';
+import { getContactPageHeroContent, updateContactPageHeroContent } from '@/lib/firebase/admin-firestore';
 import type { ContactPageHeroContent } from '@/lib/types';
 import { Loader2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

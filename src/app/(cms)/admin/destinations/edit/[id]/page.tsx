@@ -7,7 +7,7 @@ import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { nanoid } from 'nanoid';
-import { getDestinationPageDestinationById, updateDestinationPageDestination } from '@/lib/firebase/firestore';
+import { getDestinationPageDestinationById, updateDestinationPageDestination } from '@/lib/firebase/admin-firestore';
 import type { Destination } from '@/lib/types';
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';

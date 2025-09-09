@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getMissionVisionContent, updateMissionVisionContent } from '@/lib/firebase/firestore';
+import { getMissionVisionContent, updateMissionVisionContent } from '@/lib/firebase/admin-firestore';
 import type { MissionVisionContent } from '@/lib/types';
 import { Loader2, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

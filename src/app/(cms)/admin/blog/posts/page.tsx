@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getBlogPosts, addBlogPost, deleteBlogPost } from '@/lib/firebase/firestore';
+import { getBlogPosts, addBlogPost, deleteBlogPost } from '@/lib/firebase/admin-firestore';
 import type { BlogPost } from '@/lib/types';
 import { Trash2, PlusCircle, Loader2, Pencil, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

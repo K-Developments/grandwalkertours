@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getGalleryItems, addGalleryItem, deleteGalleryItem, updateGalleryItem } from '@/lib/firebase/firestore';
+import { getGalleryItems, addGalleryItem, deleteGalleryItem, updateGalleryItem } from '@/lib/firebase/admin-firestore';
 import type { GalleryItem } from '@/lib/types';
 import { Trash2, PlusCircle, Loader2, Pencil, XCircle } from 'lucide-react';
 import Image from 'next/image';

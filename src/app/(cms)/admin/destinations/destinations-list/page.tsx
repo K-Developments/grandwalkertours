@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { getDestinationPageDestinations, addDestinationPageDestination, deleteDestinationPageDestination } from '@/lib/firebase/firestore';
+import { getDestinationPageDestinations, addDestinationPageDestination, deleteDestinationPageDestination } from '@/lib/firebase/admin-firestore';
 import type { Destination } from '@/lib/types';
 import { Trash2, PlusCircle, Loader2, Pencil, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -111,7 +111,7 @@ export default function DestinationListPage() {
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="icon" asChild>
-                      <Link href={`/destinations?destinationId=${destination.id}`} target="_blank">
+                      <Link href={`/destinations/${destination.id}`} target="_blank">
                         <ExternalLink className="h-4 w-4" />
                         <span className="sr-only">View Live</span>
                       </Link>

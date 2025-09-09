@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getWelcomeSectionContent, updateWelcomeSectionContent } from '@/lib/firebase/firestore';
+import { getWelcomeSectionContent, updateWelcomeSectionContent } from '@/lib/firebase/admin-firestore';
 import type { WelcomeSectionContent } from '@/lib/types';
 import { Loader2, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

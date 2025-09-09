@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { getFaqItems, addFaqItem, deleteFaqItem, updateFaqItem } from '@/lib/firebase/firestore';
+import { getFaqItems, addFaqItem, deleteFaqItem, updateFaqItem } from '@/lib/firebase/admin-firestore';
 import type { FAQItem } from '@/lib/types';
 import { Trash2, PlusCircle, Loader2, Pencil, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';

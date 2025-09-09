@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { getBlogPostById, updateBlogPost } from '@/lib/firebase/firestore';
+import { getBlogPostById, updateBlogPost } from '@/lib/firebase/admin-firestore';
 import type { BlogPost } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
