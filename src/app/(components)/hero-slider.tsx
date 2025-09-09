@@ -165,10 +165,10 @@ export default function HeroSlider({ slides }: HeroSliderProps) {
                         alt={currentSlide.headline}
                         fill
                         className="w-full h-full object-cover"
-                        priority
                         data-ai-hint={currentSlide.imageHint}
                         sizes="100vw"
                         quality={95}
+                        priority
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent z-10" />
                 </motion.div>

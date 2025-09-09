@@ -5,6 +5,7 @@ import type { Testimonial, AboutSectionTitles } from '@/lib/types';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Quote } from 'lucide-react';
+import Image from 'next/image';
 
 type TestimonialsSectionProps = {
     testimonials: Testimonial[];
@@ -40,7 +41,7 @@ const TestimonialsSection = ({ testimonials, titles }: TestimonialsSectionProps)
                     <p className="text-xl text-muted-foreground italic max-w-2xl">"{testimonial.quote}"</p>
                     <div className="flex flex-col items-center gap-3 mt-4">
                       <Avatar className="w-16 h-16">
-                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} data-ai-hint={testimonial.avatarHint}/>
+                        <AvatarImage src={testimonial.avatar} alt={testimonial.name} />
                         <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                       <div>

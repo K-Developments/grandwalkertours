@@ -60,6 +60,7 @@ const MissionVisionSection = ({ content, titles }: MissionVisionSectionProps) =>
               data-ai-hint={content.missionImageHint || 'compass direction'}
               sizes="(max-width: 1024px) 100vw, 33vw"
               quality={95}
+              priority
             />
             <div className="absolute inset-0 bg-black/20" />
             <button 
